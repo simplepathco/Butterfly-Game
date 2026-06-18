@@ -1,0 +1,1503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Butterfly Breathing &amp; Listening</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#46603f;--ink2:#5f8553;--soft:#7e9079;--cream:#fbfdf8;--btn1:#8bbf72;--btn2:#5f9550}
+body{font-family:'Quicksand',system-ui,sans-serif;background:#dfeee4;height:100vh;overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+#app{width:100vw;height:100vh;position:relative;overflow:hidden}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .7s ease;padding:1.2rem}
+.screen.active{opacity:1;pointer-events:all}
+.soft-bg{background:linear-gradient(180deg,#e9f3ec 0%,#d7e9d9 45%,#bdd9bd 80%,#a6cba4 100%)}
+.kicker{font-size:.74rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--ink2);margin-bottom:.7rem;opacity:.9}
+.title{font-family:'Quicksand',sans-serif;font-weight:700;font-size:clamp(2rem,5.4vw,3.3rem);line-height:1.08;text-align:center;color:var(--ink)}
+.lede{font-size:clamp(.95rem,2vw,1.12rem);color:var(--ink2);font-weight:600;text-align:center;max-width:30rem;margin-top:.9rem;line-height:1.5}
+.btn{padding:.85rem 2.3rem;border:none;border-radius:50px;font-family:'Quicksand',sans-serif;font-weight:700;font-size:1.08rem;cursor:pointer;transition:transform .18s,box-shadow .18s;color:#fff;background:linear-gradient(135deg,var(--btn1),var(--btn2));box-shadow:0 8px 22px rgba(95,149,80,.4)}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(95,149,80,.5)}
+.btn:active{transform:translateY(0)}
+.btn-soft{background:rgba(255,255,255,.72);color:var(--ink2);box-shadow:0 5px 16px rgba(95,149,80,.18);font-size:.92rem;padding:.6rem 1.5rem}
+.btn-soft:hover{background:#fff}
+.start-art{margin-bottom:1.4rem}
+.row{display:flex;gap:.8rem;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:1.8rem}
+.egg-grid{display:flex;gap:clamp(.8rem,3vw,2rem);margin:2rem 0 1.4rem;flex-wrap:wrap;justify-content:center}
+.egg-card{width:clamp(140px,26vw,184px);background:rgba(255,255,255,.66);backdrop-filter:blur(8px);border:2px solid rgba(255,255,255,.6);border-radius:24px;padding:1.1rem 1rem 1.2rem;cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s;text-align:center;box-shadow:0 8px 26px rgba(90,120,90,.14)}
+.egg-card:hover{transform:translateY(-6px);box-shadow:0 16px 34px rgba(90,120,90,.22)}
+.egg-card.sel{border-color:var(--btn2);box-shadow:0 16px 34px rgba(95,149,80,.32)}
+.egg-name{font-family:'Quicksand',sans-serif;font-weight:700;font-size:1.02rem;margin-top:.5rem}
+.egg-sub{font-size:.76rem;color:var(--soft);margin-top:.15rem}
+#breathe{padding:0;justify-content:flex-start}
+#breathe-hud{width:100%;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.7rem 1.1rem;z-index:5}
+.bh-left{display:flex;flex-direction:column}
+.bh-tech{font-family:'Quicksand',sans-serif;font-weight:700;font-size:.98rem;color:var(--ink)}
+.bh-lvl{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);font-weight:700}
+.dots{display:flex;gap:.34rem}
+.dot{width:9px;height:9px;border-radius:50%;background:rgba(70,96,63,.22);transition:background .3s,transform .3s}
+.dot.on{background:var(--btn2);transform:scale(1.15)}
+#stage{position:relative;flex:1;width:100%;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#stage-svg{position:absolute;inset:0;width:100%;height:100%}
+#breath-overlay{position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;z-index:3}
+#phase-label{font-family:'Quicksand',sans-serif;font-weight:700;font-size:clamp(1.3rem,3.6vw,2rem);color:#3f5a39;text-shadow:0 1px 12px rgba(255,255,255,.85);transition:color .4s}
+#phase-count{font-family:'Quicksand',sans-serif;font-weight:700;font-size:clamp(2.4rem,6vw,3.4rem);color:#3f5a39;text-shadow:0 1px 16px rgba(255,255,255,.9);line-height:1}
+#phase-bar{width:200px;height:8px;border-radius:6px;background:rgba(255,255,255,.5);margin:16px auto 0;overflow:hidden;display:none;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+#phase-bar-fill{height:100%;width:0;background:#ffffff;border-radius:6px}
+#breathe-foot{width:100%;display:flex;align-items:center;justify-content:center;gap:1rem;padding:.7rem;z-index:5;min-height:46px}
+.hue-wind{background:linear-gradient(180deg,#e7f3ec 0%,#d3e9d6 55%,#b6d6b3 100%)}
+.hue-flower{background:linear-gradient(180deg,#f6e8ec 0%,#f0dbdf 50%,#e6c7cf 100%)}
+.hue-calm{background:linear-gradient(180deg,#dde6f3 0%,#d2d6ef 55%,#c2c2e6 100%)}
+#done-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(245,250,243,.55);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .5s;z-index:10}
+#done-overlay.show{opacity:1;pointer-events:all}
+.done-card{background:rgba(255,255,255,.82);backdrop-filter:blur(10px);border-radius:24px;padding:1.6rem 2rem;text-align:center;box-shadow:0 14px 40px rgba(90,120,90,.22);border:1px solid rgba(255,255,255,.6);max-width:90vw}
+.done-h{font-family:'Quicksand',sans-serif;font-weight:700;font-size:1.5rem;margin-bottom:.3rem}
+.done-p{font-size:.9rem;color:var(--ink2);margin-bottom:1.1rem;max-width:22rem}
+#celebrate{justify-content:center}
+#cel-stage{position:relative;width:min(560px,92vw);height:min(460px,58vh);margin-bottom:.4rem}
+#cel-svg{position:absolute;inset:0;width:100%;height:100%}
+#cel-spark{position:absolute;inset:0;pointer-events:none}
+.spk{position:absolute;will-change:transform,opacity;animation:tw var(--t,2s) ease-in-out infinite;animation-delay:var(--dl,0s)}
+@keyframes tw{0%,100%{opacity:0;transform:scale(.3)}50%{opacity:1;transform:scale(1.1)}}
+.cel-title{font-family:'Quicksand',sans-serif;font-weight:700;font-size:clamp(1.8rem,5vw,2.6rem);text-align:center;margin-top:.2rem}
+.cel-msg{font-size:.98rem;color:var(--ink2);text-align:center;max-width:28rem;margin:.6rem auto 0;line-height:1.5;font-weight:600}
+.cel-species{font-family:'Quicksand',sans-serif;font-weight:700;color:var(--btn2)}
+#sound-btn{position:absolute;top:.7rem;right:.7rem;z-index:50;width:42px;height:42px;border-radius:50%;border:none;background:rgba(255,255,255,.74);backdrop-filter:blur(8px);box-shadow:0 4px 14px rgba(90,120,90,.22);font-size:1.18rem;cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center}
+#sound-btn:hover{background:#fff;transform:scale(1.06)}
+.petal{position:absolute;top:-6%;will-change:transform;opacity:.85;animation:fall linear infinite}
+@keyframes fall{0%{transform:translateY(0) rotate(0)}100%{transform:translateY(120vh) rotate(360deg)}}
+@keyframes drift{0%,100%{margin-left:0}50%{margin-left:34px}}
+.fade-in{animation:fadeIn .6s ease both}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* why modal */
+#why-modal{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;background:rgba(70,96,63,.34);backdrop-filter:blur(5px);opacity:0;pointer-events:none;transition:opacity .35s;padding:1.2rem}
+#why-modal.show{opacity:1;pointer-events:all}
+.why-card{background:rgba(255,255,255,.96);border-radius:26px;padding:1.8rem 1.9rem;max-width:34rem;width:100%;box-shadow:0 20px 60px rgba(70,96,63,.3);max-height:88vh;overflow:auto}
+.why-card h2{font-family:'Quicksand',sans-serif;font-weight:700;font-size:1.5rem;color:var(--ink);margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+.why-card p{color:#5a6f55;font-size:.95rem;line-height:1.55;margin-bottom:.9rem}
+.why-list{list-style:none;display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.1rem}
+.why-list li{display:flex;gap:.6rem;align-items:flex-start;font-size:.92rem;color:#46603f;font-weight:600;line-height:1.4}
+.why-ic{flex-shrink:0;width:26px;height:26px;border-radius:50%;background:#e8f3df;display:flex;align-items:center;justify-content:center;font-size:.95rem}
+.why-note{background:#fff8e8;border-left:4px solid #e8c86a;border-radius:0 10px 10px 0;padding:.7rem .9rem;font-size:.88rem;color:#7a6a3a;margin-bottom:1.2rem}
+#hatch-stage{position:relative;width:min(520px,92vw);height:min(330px,44vh)}
+#hatch-svg{position:absolute;inset:0;width:100%;height:100%}
+#hatch-spark{position:absolute;inset:0;pointer-events:none}
+/* ---- Part 2: Listening ---- */
+#listen{padding:0;justify-content:flex-start;background:#1c2c4a;transition:opacity .7s ease, background 1.2s ease}
+#listen-hud{width:100%;display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.7rem 1.1rem;z-index:5}
+#listen-hud .bh-tech,#listen-hud .bh-lvl{color:#fff}
+#listen-hud .bh-tech{text-shadow:0 1px 8px rgba(0,0,0,.35)}
+#listen-stage{position:relative;flex:1;width:100%;min-height:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#listen-svg{position:absolute;inset:0;width:100%;height:100%}
+#listen-msg{position:absolute;left:50%;bottom:7%;transform:translateX(-50%);text-align:center;font-family:'Quicksand',sans-serif;font-weight:700;font-size:clamp(.92rem,2.3vw,1.16rem);color:#fff;text-shadow:0 1px 10px rgba(0,0,0,.4);pointer-events:none;z-index:3;opacity:.92}
+.key-hint{display:inline-block;padding:.22rem .6rem;border-radius:8px;background:rgba(255,255,255,.22);border:1px solid rgba(255,255,255,.42);font-family:'Quicksand',sans-serif;font-weight:700;margin:0 .12rem}
+#listen-done-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(12,14,22,.4);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .5s;z-index:10}
+#listen-done-overlay.show{opacity:1;pointer-events:all}
+#listen-foot{width:100%;display:flex;align-items:center;justify-content:center;gap:1rem;padding:.7rem;z-index:5;min-height:46px}
+#listen-foot .btn-soft{background:rgba(255,255,255,.85)}
+#celebrate{transition:opacity .7s ease, background 2.2s ease}
+</style>
+</head>
+<body>
+<div id="app">
+<button id="sound-btn" onclick="toggleSound()" title="Sound on/off"></button>
+
+<div id="start" class="screen soft-bg active">
+  <div class="kicker">Part 1 &middot; The Breathing Journey</div>
+  <svg class="start-art" width="160" height="120" viewBox="0 0 160 120" id="start-art"></svg>
+  <div class="title">Butterfly<br>Breathing</div>
+  <div class="lede">Follow a tiny life from egg to butterfly. Three gentle breathing exercises to help you feel calm, focused, and ready.</div>
+  <div class="row">
+    <button class="btn-soft btn" onclick="openWhy()" style="color:var(--ink2)">Why breathe?</button>
+    <button class="btn" onclick="goEgg()">Begin</button>
+  </div>
+</div>
+
+<div id="egg" class="screen soft-bg">
+  <div class="kicker">Choose your beginning</div>
+  <div class="title" style="font-size:clamp(1.6rem,4.4vw,2.4rem)">Pick an egg</div>
+  <div class="lede" style="margin-top:.5rem">Each egg grows into a different butterfly.</div>
+  <div class="egg-grid" id="egg-grid"></div>
+  <button class="btn" id="egg-go" onclick="startJourney()" disabled style="opacity:.45">Choose an egg first</button>
+</div>
+
+<div id="hatch" class="screen soft-bg">
+  <div class="kicker">A new beginning</div>
+  <div id="hatch-stage">
+    <svg id="hatch-svg" viewBox="0 0 560 320" preserveAspectRatio="xMidYMid meet"></svg>
+    <div id="hatch-spark"></div>
+  </div>
+  <div class="cel-msg" id="hatch-msg" style="min-height:1.4em"></div>
+  <button class="btn" id="hatch-btn" style="display:none;margin-top:1rem" onclick="hatchToLevel()">Begin breathing &#9656;</button>
+</div>
+
+<div id="breathe" class="screen hue-wind">
+  <div id="breathe-hud">
+    <div class="bh-left"><span class="bh-lvl" id="bh-lvl"></span><span class="bh-tech" id="bh-tech"></span></div>
+    <div class="dots" id="cycle-dots"></div>
+  </div>
+  <div id="stage">
+    <svg id="stage-svg" viewBox="0 0 800 560" preserveAspectRatio="xMidYMid slice"></svg>
+    <div id="breath-overlay">
+      <div id="phase-label"></div>
+      <div id="phase-count"></div>
+      <div id="phase-bar"><div id="phase-bar-fill"></div></div>
+    </div>
+    <div id="done-overlay"><div class="done-card">
+      <div class="done-h" id="done-h"></div>
+      <div class="done-p" id="done-p"></div>
+      <button class="btn" id="done-btn"></button>
+    </div></div>
+  </div>
+  <div id="breathe-foot">
+    <button class="btn-soft btn" style="color:var(--ink2)" onclick="skipLevel()">Skip &#9656;</button>
+  </div>
+</div>
+
+<div id="emo-pick" class="screen soft-bg">
+  <div class="kicker">Part 2 &middot; The Listening Journey</div>
+  <div class="title" style="font-size:clamp(1.6rem,4.4vw,2.4rem)">How are you feeling?</div>
+  <div class="lede" style="margin-top:.5rem">A chrysalis is forming. Choose a feeling &mdash; it shapes the sounds, the weather, and the colors of what comes next.</div>
+  <div class="egg-grid" id="emo-grid"></div>
+  <button class="btn" id="emo-go" onclick="startListening()" disabled style="opacity:.45">Choose a feeling first</button>
+</div>
+
+<div id="listen" class="screen">
+  <div id="listen-hud">
+    <div class="bh-left"><span class="bh-lvl" id="ls-lvl"></span><span class="bh-tech" id="ls-tech"></span></div>
+    <div class="dots" id="catch-dots"></div>
+  </div>
+  <div id="listen-stage">
+    <svg id="listen-svg" viewBox="0 0 800 560" preserveAspectRatio="xMidYMid slice"></svg>
+    <div id="listen-spark" style="position:absolute;inset:0;pointer-events:none"></div>
+    <div id="listen-msg">Listen closely, then press <span class="key-hint">space</span></div>
+    <div id="listen-done-overlay"><div class="done-card">
+      <div class="done-h" id="ld-h"></div>
+      <div class="done-p" id="ld-p"></div>
+      <button class="btn" id="ld-btn"></button>
+    </div></div>
+  </div>
+  <div id="listen-foot">
+    <button class="btn-soft btn" style="color:var(--ink2)" onclick="skipListenLevel()">Skip &#9656;</button>
+  </div>
+</div>
+
+<div id="celebrate" class="screen soft-bg">
+  <div id="cel-stage">
+    <svg id="cel-svg" viewBox="0 -80 560 460" preserveAspectRatio="xMidYMid meet"></svg>
+    <div id="cel-spark"></div>
+  </div>
+  <div class="cel-title" id="cel-title"></div>
+  <div class="cel-msg" id="cel-msg"></div>
+  <div class="row">
+    <button class="btn" id="cel-btn" onclick="replayBreathing()">Begin again</button>
+  </div>
+</div>
+
+<div id="why-modal">
+  <div class="why-card">
+    <h2><span>&#127811;</span> Why we breathe</h2>
+    <p>When you feel big feelings &mdash; worried, angry, excited, or nervous &mdash; your body speeds up: your heart beats faster and your thoughts race. Slow, gentle breathing sends your brain a quiet message: <em>you are safe</em>. Your heart slows, your muscles loosen, and your mind feels clear again.</p>
+    <ul class="why-list">
+      <li><span class="why-ic">&#128156;</span><span>Calms worry and big feelings when they feel too strong</span></li>
+      <li><span class="why-ic">&#127919;</span><span>Helps your brain focus and pay attention</span></li>
+      <li><span class="why-ic">&#127757;</span><span>Cools down anger before it grows too big</span></li>
+      <li><span class="why-ic">&#128164;</span><span>Helps your body settle so it is easier to fall asleep</span></li>
+      <li><span class="why-ic">&#10024;</span><span>You can do it anywhere &mdash; at school, in bed, or on the bus &mdash; and no one even knows</span></li>
+    </ul>
+    <div class="why-note">Just like a caterpillar grows a little with every leaf, you grow calmer with every breath. Three short exercises, only a few breaths each.</div>
+    <div style="text-align:center"><button class="btn" onclick="closeWhy()">Let's breathe</button></div>
+  </div>
+</div>
+</div>
+
+<script>
+const SPECIES=[
+  {egg:'Blue Morpho',butterfly:'Blue Morpho',sub:'Starry & magical',
+   eggShell:'#8ec6f0',eggSpot:'#2a5c9e',chrys:'#5aacde',deep:'#1a4878'},
+  {egg:'Swallowtail',butterfly:'Swallowtail',sub:'Bold & graceful',
+   eggShell:'#f0e260',eggSpot:'#7a5a12',chrys:'#c8a830',deep:'#5a3e10'},
+  {egg:'Monarch',butterfly:'Monarch',sub:'Warm & brave',
+   eggShell:'#f08840',eggSpot:'#622010',chrys:'#c06030',deep:'#3e1606'},
+];
+const LEVELS=[
+  {id:1,title:'Breathing with the Wind',tech:'Gentle Wind Breathing',hue:'hue-wind',visual:'wind',
+   leaf:'#5fa83f',leaf2:'#cde07f',leafShape:'oval',ground:'#5a9446',
+   intro:'Let us begin with the wind. Breathe in slowly as it gathers, and out gently as it blows.',
+   cycles:2, phases:[{k:'in',label:'Breathe in',secs:4},{k:'out',label:'Breathe out',secs:6}],
+   done:{h:'Calm and steady',p:'You moved with the wind, and your little caterpillar ate its first leaves.'}},
+  {id:2,title:'Smell the Flower',tech:'Flower Breathing',hue:'hue-flower',visual:'flower',
+   leaf:'#7cae57',leaf2:'#e7a6c4',leafShape:'petal',ground:'#6aa050',
+   intro:'Now, smell the flower. Breathe in its sweet scent, then let your breath out softly.',
+   cycles:2, phases:[{k:'smell',label:'Smell the flower',secs:4},{k:'out',label:'Breathe out softly',secs:6}],
+   done:{h:'Soft and gentle',p:'You breathed in calm like a sweet smell. The caterpillar keeps growing.'}},
+  {id:3,title:'4-7-8 Breathing',tech:'The 4 - 7 - 8 Breath',hue:'hue-calm',visual:'orb',
+   leaf:'#6fb0a0',leaf2:'#9ac9d8',leafShape:'pointed',ground:'#4f8f86',
+   intro:'Last one. The four, seven, eight breath. Breathe in for four, hold for seven, and out for eight.',
+   cycles:2, phases:[{k:'in',label:'Breathe in',secs:4},{k:'hold',label:'Hold',secs:7},{k:'out',label:'Breathe out',secs:8}],
+   done:{h:'Wonderfully calm',p:'A powerful breath for rest and focus. Full and content, the caterpillar is ready for a great change...'}},
+];
+
+let G={egg:0, level:0, raf:null, timers:[], running:false,
+       breath:0, totalBreaths:6, catX:120, catScale:0.13, catRaf:null, munchRaf:null,
+       windStrength:0.25, windRaf:null, windLast:0, meals:[]};
+
+// ===================== PART 2: EMOTIONS (listening journey theme) =====================
+const EMOTIONS=[
+  {id:'sadness', name:'Sadness', sub:'A quiet rainy day', icon:'\u{1F327}',
+   start:'#1c2c4a', end:'#cfd9e3',
+   bgKey:'sadness_bg', targetKey:'sadness_target', synthBg:'rain', synthTarget:'frog',
+   storm:[0.22,0.32,0.42], leafTint:'#8aa0b8', spotTint:'#0d1830',
+   doneMsg:['The rain softens, just a little.','The clouds begin to part.','Quiet has its own kind of light.']},
+  {id:'anger', name:'Anger', sub:'A building storm', icon:'\u26A1',
+   start:'#2c1638', end:'#d9a14e',
+   bgKey:null, targetKey:null, synthBg:'thunder', synthTarget:'rainping',
+   storm:[0.55,0.8,1.05], leafTint:'#a98bb8', spotTint:'#190a20',
+   doneMsg:['The thunder rolls further away.','The wind begins to settle.','Even storms run out of breath.']},
+  {id:'calm', name:'Calm', sub:'A soft morning', icon:'\u{1F426}',
+   start:'#1f6e3a', end:'#f0c869',
+   bgKey:'calm_bg', targetKey:'calm_target', synthBg:'birdsong', synthTarget:'cricket',
+   storm:[0.1,0.16,0.24], leafTint:'#bfe3a0', spotTint:'#123018',
+   doneMsg:['The morning stretches a little wider.','Light pools on the leaves.','Everything is exactly where it should be.']}
+];
+function hexToRgb(h){h=h.replace('#','');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function lerpColor(a,b,t){t=Math.max(0,Math.min(1,t));a=hexToRgb(a);b=hexToRgb(b);
+  const r=Math.round(a[0]+(b[0]-a[0])*t),g=Math.round(a[1]+(b[1]-a[1])*t),bl=Math.round(a[2]+(b[2]-a[2])*t);
+  return 'rgb('+r+','+g+','+bl+')';}
+
+let breathLevel=0;
+const CIRC=2*Math.PI*150;
+let windStreaks=[], windLeaves=[];
+const CAT_X0=120, CAT_X1=550, CAT_S0=0.7, CAT_S1=2.4, CAT_Y=458;
+
+// ===================== AUDIO =====================
+const SOUND={
+  ctx:null,master:null,muted:false,bed:-1,nodes:[],timers:[],_nb:{},
+  ensure(){if(this.ctx)return true;try{const AC=window.AudioContext||window.webkitAudioContext;this.ctx=new AC();this.master=this.ctx.createGain();this.master.gain.value=this.muted?0:0.055;this.master.connect(this.ctx.destination);}catch(e){return false}return true;},
+  resume(){try{if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume()}catch(e){}},
+  nb(t){if(this._nb[t])return this._nb[t];const ctx=this.ctx,len=ctx.sampleRate*2,b=ctx.createBuffer(1,len,ctx.sampleRate),d=b.getChannelData(0);let last=0;for(let i=0;i<len;i++){let w=Math.random()*2-1;if(t==='brown'){last=(last+0.02*w)/1.02;d[i]=last*3.2;}else if(t==='pink'){last=0.96*last+0.04*w;d[i]=w*0.35+last*0.65;}else d[i]=w;}this._nb[t]=b;return b;},
+  src(t){const s=this.ctx.createBufferSource();s.buffer=this.nb(t);s.loop=true;return s;},
+  T(n){this.nodes.push(n);return n;},
+  g(v){const x=this.ctx.createGain();x.gain.value=v;return x;},
+  f(t,fr,q){const x=this.ctx.createBiquadFilter();x.type=t;x.frequency.value=fr;if(q!=null)x.Q.value=q;return x;},
+  startBed(idx){if(!this.ensure())return;this.resume();if(this.bed===idx)return;this.stopBed();this.bed=idx;try{if(idx===0)this.windBed();else if(idx===1)this.flowerBed();else this.calmBed();}catch(e){}},
+  stopBed(){this.timers.forEach(t=>clearTimeout(t));this.timers=[];this.nodes.forEach(n=>{try{n.stop&&n.stop()}catch(e){}try{n.disconnect&&n.disconnect()}catch(e){}});this.nodes=[];this.bed=-1;},
+  setMuted(m){this.muted=m;if(this.master&&this.ctx)this.master.gain.setTargetAtTime(m?0:0.055,this.ctx.currentTime,0.1);if(m&&'speechSynthesis'in window)speechSynthesis.cancel();},
+  windBed(){const c=this.ctx;const w=this.T(this.src('brown'));const lp=this.f('lowpass',480);const g=this.g(0.34);w.connect(lp);lp.connect(g);g.connect(this.master);w.start();
+    const gl=this.T(c.createOscillator());gl.frequency.value=0.06;const glg=this.g(0.18);gl.connect(glg);glg.connect(g.gain);gl.start();
+    const fl=this.T(c.createOscillator());fl.frequency.value=0.045;const flg=this.g(200);fl.connect(flg);flg.connect(lp.frequency);fl.start();},
+  flowerBed(){const c=this.ctx;const br=this.T(this.src('pink'));const blp=this.f('lowpass',760);const bg=this.g(0.12);br.connect(blp);blp.connect(bg);bg.connect(this.master);br.start();this.birds();},
+  calmBed(){const c=this.ctx;[110,165].forEach(fr=>{const o=this.T(c.createOscillator());o.type='triangle';o.frequency.value=fr;const lp=this.f('lowpass',520);const og=this.g(0.05);o.connect(lp);lp.connect(og);og.connect(this.master);o.start();});
+    const br=this.T(this.src('pink'));const blp=this.f('lowpass',700);const bg=this.g(0.1);br.connect(blp);blp.connect(bg);bg.connect(this.master);br.start();},
+  whoosh(dur){if(!this.ctx||this.muted)return;const c=this.ctx,t=c.currentTime;const s=c.createBufferSource();s.buffer=this.nb('white');s.loop=true;
+    const bp=c.createBiquadFilter();bp.type='bandpass';bp.frequency.setValueAtTime(480,t);bp.frequency.linearRampToValueAtTime(1300,t+dur*0.5);bp.frequency.linearRampToValueAtTime(380,t+dur);bp.Q.value=0.8;
+    const g=c.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(0.5,t+dur*0.45);g.gain.linearRampToValueAtTime(0.0001,t+dur);
+    s.connect(bp);bp.connect(g);g.connect(this.master);s.start(t);s.stop(t+dur+0.1);},
+  shimmer(dur){if(!this.ctx||this.muted)return;const c=this.ctx,t=c.currentTime;const o=c.createOscillator();o.type='sine';o.frequency.setValueAtTime(680,t);o.frequency.linearRampToValueAtTime(1080,t+dur);const g=c.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(0.05,t+dur*0.5);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(g);g.connect(this.master);o.start(t);o.stop(t+dur+0.1);},
+  chime(k){if(!this.ctx||this.muted)return;const c=this.ctx,t=c.currentTime;const f={in:523,hold:440,out:330,smell:587}[k]||440;
+    const o=c.createOscillator();o.type='sine';o.frequency.value=f;const o2=c.createOscillator();o2.type='sine';o2.frequency.value=f*2.01;
+    const g=c.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(0.1,t+0.04);g.gain.exponentialRampToValueAtTime(0.0001,t+1.3);
+    const g2=c.createGain();g2.gain.value=0.04;o.connect(g);o2.connect(g2);g2.connect(g);g.connect(this.master);o.start(t);o2.start(t);o.stop(t+1.4);o2.stop(t+1.4);},
+  munch(){if(!this.ctx||this.muted)return;const c=this.ctx,t=c.currentTime;const o=c.createOscillator();o.type='triangle';o.frequency.setValueAtTime(130,t);o.frequency.linearRampToValueAtTime(90,t+0.12);const g=c.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(0.035,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+0.14);o.connect(g);g.connect(this.master);o.start(t);o.stop(t+0.16);},
+  chirp(){if(!this.ctx||this.muted)return;const c=this.ctx,t=c.currentTime;const o=c.createOscillator();o.type='sine';const f0=1900+Math.random()*1100;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f0*1.4,t+0.05);o.frequency.exponentialRampToValueAtTime(f0*0.85,t+0.15);const g=c.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(0.07,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+0.22);o.connect(g);g.connect(this.master);o.start(t);o.stop(t+0.25);},
+  birds(){const loop=()=>{if(this.bed!==1)return;const n=1+Math.floor(Math.random()*2);for(let i=0;i<n;i++)this.timers.push(setTimeout(()=>this.chirp(),i*160));this.timers.push(setTimeout(loop,(3+Math.random()*5)*1000));};this.timers.push(setTimeout(loop,1400));},
+};
+
+// ===================== PART 2 AUDIO: ambience + target sounds =====================
+// Put real filenames here (relative to this HTML file, or full URLs). Files are
+// loaded with fetch()+decodeAudioData — never embedded — so the page stays small.
+// Leave a value as '' to keep using the synthesized fallback for that sound.
+const AUDIO_ASSETS={
+  sadness_bg:'audio/sadness_bg.mp3',         // light rain
+  sadness_target:'audio/sadness_target.mp3', // frog ribbit
+  calm_bg:'audio/calm_bg.mp3',                // birdsong
+  calm_target:'audio/calm_target.mp3'         // cricket chirp
+};
+const LSOUND={
+  ambNodes:[], ambTimers:[], bgGain:null, targetGain:null, _buf:{},
+  init(){SOUND.ensure();SOUND.resume();
+    if(!this.bgGain){this.bgGain=SOUND.ctx.createGain();this.bgGain.gain.value=0.0001;this.bgGain.connect(SOUND.master);}
+    if(!this.targetGain){this.targetGain=SOUND.ctx.createGain();this.targetGain.gain.value=1;this.targetGain.connect(SOUND.master);}
+  },
+  T(n){this.ambNodes.push(n);return n;},
+  clearAmb(){this.ambTimers.forEach(t=>clearTimeout(t));this.ambTimers=[];
+    this.ambNodes.forEach(n=>{try{n.stop&&n.stop()}catch(e){}try{n.disconnect&&n.disconnect()}catch(e){}});
+    this.ambNodes=[];},
+  async decode(key){
+    if(!key)return null;
+    if(this._buf[key])return this._buf[key];
+    const src=AUDIO_ASSETS[key];
+    if(!src)return null;
+    try{
+      const res=await fetch(src);
+      const arr=await res.arrayBuffer();
+      const buf=await SOUND.ctx.decodeAudioData(arr);
+      this._buf[key]=buf;return buf;
+    }catch(e){console.warn('LSOUND: could not load/decode',src,e);return null;}
+  },
+  async startAmbience(emo,levelCfg){
+    this.init();this.clearAmb();
+    const vol=0.16*levelCfg.bgVol;
+    this.bgGain.gain.cancelScheduledValues(SOUND.ctx.currentTime);
+    this.bgGain.gain.setTargetAtTime(0.0001,SOUND.ctx.currentTime,0.05);
+    const buf=await this.decode(emo.bgKey);
+    if(buf){const src=this.T(SOUND.ctx.createBufferSource());src.buffer=buf;src.loop=true;src.connect(this.bgGain);src.start();}
+    else this.synthBg(emo.synthBg);
+    this.bgGain.gain.setTargetAtTime(vol,SOUND.ctx.currentTime,1.1);
+  },
+  synthBg(type){
+    if(type==='rain'){
+      const n=this.T(SOUND.src('pink'));const hp=SOUND.f('highpass',600);const lp=SOUND.f('lowpass',5200);
+      n.connect(hp);hp.connect(lp);lp.connect(this.bgGain);n.start();
+      const n2=this.T(SOUND.src('white'));const bp=SOUND.f('bandpass',3200,0.7);const g2=SOUND.g(0.4);
+      n2.connect(bp);bp.connect(g2);g2.connect(this.bgGain);n2.start();
+    }else if(type==='thunder'){
+      const n=this.T(SOUND.src('brown'));const lp=SOUND.f('lowpass',220);
+      n.connect(lp);lp.connect(this.bgGain);n.start();
+      const loop=()=>{this.thunderClap();this.ambTimers.push(setTimeout(loop,2600+Math.random()*5200));};
+      this.ambTimers.push(setTimeout(loop,1200+Math.random()*1600));
+    }else if(type==='birdsong'){
+      const n=this.T(SOUND.src('pink'));const lp=SOUND.f('lowpass',900);const g=SOUND.g(0.18);
+      n.connect(lp);lp.connect(g);g.connect(this.bgGain);n.start();
+      const loop=()=>{const k=1+Math.floor(Math.random()*2);
+        for(let i=0;i<k;i++)this.ambTimers.push(setTimeout(()=>this.birdChirp(),i*180));
+        this.ambTimers.push(setTimeout(loop,(2.3+Math.random()*3.8)*1000));};
+      this.ambTimers.push(setTimeout(loop,1100));
+    }
+  },
+  thunderClap(){if(SOUND.muted||!SOUND.ctx)return;const c=SOUND.ctx,t=c.currentTime;
+    const n=c.createBufferSource();n.buffer=SOUND.nb('brown');
+    const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.setValueAtTime(320,t);lp.frequency.exponentialRampToValueAtTime(60,t+1.6);
+    const g=c.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(0.9,t+0.08);g.gain.exponentialRampToValueAtTime(0.0001,t+1.8);
+    n.connect(lp);lp.connect(g);g.connect(this.bgGain);n.start(t);n.stop(t+2);},
+  birdChirp(){if(SOUND.muted||!SOUND.ctx)return;const c=SOUND.ctx,t=c.currentTime;
+    const o=c.createOscillator();o.type='sine';const f0=2200+Math.random()*1400;
+    o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f0*1.3,t+0.06);o.frequency.exponentialRampToValueAtTime(f0*0.8,t+0.16);
+    const g=c.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(0.5,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+0.22);
+    o.connect(g);g.connect(this.bgGain);o.start(t);o.stop(t+0.25);},
+  async playTarget(emo){
+    this.init();
+    const buf=await this.decode(emo.targetKey);
+    if(buf){const src=SOUND.ctx.createBufferSource();src.buffer=buf;src.connect(this.targetGain);src.start();return;}
+    this.synthTarget(emo.synthTarget);
+  },
+  synthTarget(type){if(SOUND.muted||!SOUND.ctx)return;const c=SOUND.ctx,t=c.currentTime;
+    if(type==='frog'){
+      [0,0.11].forEach((dt,i)=>{const o=c.createOscillator();o.type='sawtooth';
+        o.frequency.setValueAtTime(190-i*20,t+dt);o.frequency.exponentialRampToValueAtTime(140-i*15,t+dt+0.09);
+        const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=900;
+        const g=c.createGain();g.gain.setValueAtTime(0.0001,t+dt);g.gain.linearRampToValueAtTime(0.55,t+dt+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+dt+0.11);
+        o.connect(lp);lp.connect(g);g.connect(this.targetGain);o.start(t+dt);o.stop(t+dt+0.13);});
+    }else if(type==='rainping'){
+      const o=c.createOscillator();o.type='sine';o.frequency.setValueAtTime(1500,t);o.frequency.exponentialRampToValueAtTime(700,t+0.18);
+      const g=c.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.linearRampToValueAtTime(0.5,t+0.012);g.gain.exponentialRampToValueAtTime(0.0001,t+0.3);
+      o.connect(g);g.connect(this.targetGain);o.start(t);o.stop(t+0.32);
+      const o2=c.createOscillator();o2.type='sine';o2.frequency.value=2600;const g2=c.createGain();
+      g2.gain.setValueAtTime(0.0001,t);g2.gain.linearRampToValueAtTime(0.18,t+0.01);g2.gain.exponentialRampToValueAtTime(0.0001,t+0.15);
+      o2.connect(g2);g2.connect(this.targetGain);o2.start(t);o2.stop(t+0.16);
+    }else if(type==='cricket'){
+      let dt=0;for(let i=0;i<5;i++){const o=c.createOscillator();o.type='square';o.frequency.value=4200+Math.random()*200;
+        const g=c.createGain();g.gain.setValueAtTime(0.0001,t+dt);g.gain.linearRampToValueAtTime(0.22,t+dt+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+dt+0.05);
+        o.connect(g);g.connect(this.targetGain);o.start(t+dt);o.stop(t+dt+0.06);dt+=0.075;}
+    }},
+  stop(){this.clearAmb();if(this.bgGain&&SOUND.ctx)this.bgGain.gain.setTargetAtTime(0.0001,SOUND.ctx.currentTime,0.25);}
+};
+
+
+// ===================== SPEECH (soft, female, calming) =====================
+let _vp=null;
+var MALEV=/\b(male|david|mark|daniel|alex|fred|george|james|guy|paul|thomas|rishi|oliver|arthur|gordon|lee|reed|eddy|rocko|jacques|diego|carlos|juan)\b|google uk english male|microsoft (david|mark|guy)/i;
+var FEMV=/female|woman|samantha|victoria|karen|moira|tessa|serena|allison|ava|susan|fiona|zira|aria|jenny|sonia|libby|michelle|catherine|hazel|nicky|kathy|princess|google us english|google uk english female|microsoft (zira|aria|jenny|michelle|hazel)/i;
+function pickVoice(){if(!('speechSynthesis'in window))return null;var vs=speechSynthesis.getVoices();if(!vs.length)return null;
+  var en=vs.filter(function(v){return /^en/i.test(v.lang);});var pool=en.length?en:vs;
+  var PREM=/enhanced|premium|neural|natural/i;
+  var v=pool.find(function(x){return PREM.test(x.name)&&FEMV.test(x.name);});if(v)return v;
+  v=pool.find(function(x){return FEMV.test(x.name);});if(v)return v;
+  v=pool.find(function(x){return !MALEV.test(x.name);});if(v)return v;return pool[0];}
+function ensureVoice(){if(!_vp||MALEV.test(_vp.name))_vp=pickVoice();}
+if('speechSynthesis'in window){speechSynthesis.onvoiceschanged=function(){_vp=pickVoice()};try{speechSynthesis.getVoices();}catch(e){}}
+function speak(t,rate){if(!('speechSynthesis'in window)||SOUND.muted)return;try{speechSynthesis.cancel();ensureVoice();var u=new SpeechSynthesisUtterance(t);if(_vp)u.voice=_vp;u.rate=rate||0.88;u.pitch=1.05;u.volume=0.72;speechSynthesis.speak(u);}catch(e){}}
+function toggleSound(){SOUND.setMuted(!SOUND.muted);setSoundIcon();if(!SOUND.muted){SOUND.ensure();SOUND.resume();if(G.running)SOUND.startBed(G.level);}}
+function setSoundIcon(){document.getElementById('sound-btn').textContent=String.fromCodePoint(SOUND.muted?0x1F507:0x1F50A);}
+
+// ===================== SVG HELPERS =====================
+const NS='http://www.w3.org/2000/svg';
+function el(tag,a,p){const e=document.createElementNS(NS,tag);if(a)for(const k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+function path(d,a,p){a=a||{};a.d=d;return el('path',a,p);}
+function circ(cx,cy,r,a,p){a=a||{};a.cx=cx;a.cy=cy;a.r=r;return el('circle',a,p);}
+function ellp(cx,cy,rx,ry,a,p){a=a||{};a.cx=cx;a.cy=cy;a.rx=rx;a.ry=ry;return el('ellipse',a,p);}
+function line(x1,y1,x2,y2,a,p){a=a||{};a.x1=x1;a.y1=y1;a.x2=x2;a.y2=y2;return el('line',a,p);}
+function grad(defs,id,stops,cx,cy,r){const g=el('radialGradient',{id,cx:cx||'45%',cy:cy||'40%',r:r||'65%'},defs);stops.forEach(s=>el('stop',{offset:s[0],'stop-color':s[1],'stop-opacity':s[2]==null?1:s[2]},g));return g;}
+
+// ===================== BUTTERFLIES (procedural SVG art) =====================
+function ensureDefs(svgEl){var d=svgEl.querySelector('defs');if(!d){d=el('defs',{});svgEl.insertBefore(d,svgEl.firstChild);}return d;}
+
+function butterflyPalette(name){
+  if(name==='Blue Morpho')return{grad:[['0%','#f2f9ff'],['18%','#a3e0ff'],['40%','#3da1ff'],['70%','#1b52ce'],['92%','#08133a'],['100%','#030714']],margin:'#04060d',shimmer:['#ffffff','#bfe9ff'],accent:'#071232'};
+  if(name==='Swallowtail')return{grad:[['0%','#fffbe3'],['25%','#fad94c'],['65%','#e6a800'],['90%','#9e6f03'],['100%','#1a1302']],margin:'#141108',stripe:'#141007',eyespot:['#110e06','#d63636','#2f62bd']};
+  return{grad:[['0%','#ffdf9e'],['28%','#ff9f23'],['60%','#eb5b13'],['88%','#b33305'],['100%','#1c0700']],margin:'#170b03',vein:'#140a03',spot:'#fffbf5'};
+}
+
+function buildWingArt(sp,gid,prefix){
+  var name=sp.butterfly,pal=butterflyPalette(name);
+  var wg=el('g',{class:'wing-art'});
+  
+  // REALISM UPGRADE: Fully customized wing geometries per species
+  var dFore, dHind;
+  
+  if(name==='Swallowtail'){
+    // Elongated upper wing tip and distinct trailing tail extension
+    dFore='M0,0 C20,-68 90,-85 158,-42 C168,-20 135,15 110,22 C70,28 30,15 0,0 Z';
+    dHind='M0,0 C35,15 80,25 115,20 C128,40 112,70 124,106 C115,114 106,110 102,96 C92,85 82,92 55,88 C25,82 15,50 0,0 Z';
+  } else if(name==='Blue Morpho'){
+    // Massive, deeply curved, broad wing surface
+    dFore='M0,0 C25,-58 85,-78 148,-48 C168,-22 158,22 122,27 C82,34 35,15 0,0 Z';
+    dHind='M0,0 C35,15 80,32 122,27 C138,48 128,88 98,98 C66,108 25,68 0,0 Z';
+  } else {
+    // Monarch: Classic elegant aerodynamic triangular layout
+    dFore='M0,0 C30,-62 95,-72 146,-36 C162,-16 146,16 116,22 C76,30 30,15 0,0 Z';
+    dHind='M0,0 C30,15 75,32 114,23 C126,44 116,78 90,85 C64,91 25,62 0,0 Z';
+  }
+  
+  // Render base wing segments
+  path(dFore,{fill:'url(#'+gid+')',stroke:pal.margin,'stroke-width':2.5,'stroke-linejoin':'round'},wg);
+  path(dHind,{fill:'url(#'+gid+')',stroke:pal.margin,'stroke-width':2.2,'stroke-linejoin':'round'},wg);
+  
+  // Add an organic rich outer boundary vignette layer
+  path(dFore,{fill:'none',stroke:pal.margin,'stroke-width':8,opacity:0.25,'stroke-linejoin':'round'},wg);
+  path(dHind,{fill:'none',stroke:pal.margin,'stroke-width':7,opacity:0.25,'stroke-linejoin':'round'},wg);
+
+  if(name==='Monarch'){
+    // REALISM UPGRADE: Natural biological branching vein structure
+    var veins = [
+      'M10,-2 C45,-20 85,-25 135,-33', 'M45,-20 C70,-5 105,5 130,2',
+      'M15,12 C55,8 90,5 125,-2',     'M55,8 C75,22 105,30 122,22',
+      'M18,28 C50,30 85,38 112,42',   'M50,30 C65,48 85,58 98,54',
+      'M15,40 C35,48 60,58 82,64'
+    ];
+    veins.forEach(function(v){
+      path(v,{stroke:pal.vein,'stroke-width':1.8,fill:'none',opacity:0.65,'stroke-linecap':'round'},wg);
+    });
+    
+    // Soft marginal depth mapping
+    path('M110,-28 C135,-15 140,10 110,18 C130,30 115,65 85,75',{stroke:pal.vein,'stroke-width':5,fill:'none',opacity:0.35},wg);
+
+    // Denser, organically distributed cluster dots along the wing tips
+    var spots = [[122,-24],[135,0],[124,24],[102,48],[74,66],[44,56],[140,-12],[112,36],[88,58]];
+    spots.forEach(function(c){
+      circ(c[0],c[1],2.4,{fill:pal.spot,opacity:0.9},wg);
+      circ(c[0]+2,c[1]+2,1.4,{fill:pal.spot,opacity:0.5},wg); // Secondary tiny accent spots
+    });
+
+  } else if(name==='Blue Morpho'){
+    // Layered gradients to simulate physical structural iridescence light refraction
+    ellp(45,-18,52,34,{fill:pal.shimmer[0],opacity:0.28,filter:'url(#'+prefix+'sh)'},wg);
+    ellp(65,12,35,22,{fill:pal.shimmer[1],opacity:0.22,filter:'url(#'+prefix+'sh)'},wg);
+    
+    // Soft micro-ripples along outer wing margins
+    ['M125,-32 C145,-10 135,15 105,20','M105,20 C122,40 112,75 85,82'].forEach(function(r){
+      path(r,{stroke:pal.accent,'stroke-width':4,fill:'none',opacity:0.4},wg);
+    });
+    
+    circ(96,54,6.5,{fill:pal.accent,opacity:0.4},wg);
+    circ(54,68,4.5,{fill:pal.accent,opacity:0.3},wg);
+
+  } else {
+    // SWALLOWTAIL RE-DESIGN: Inside-boundary filigree and jewel accents
+    
+    // 1. Delicate radiating wing veins (shortened to stop well before the outer margins)
+    var delicateVeins = [
+      'M12,-5 C45,-28 85,-35 125,-26',
+      'M15,5 C55,-3 85,-5 112,2',
+      'M18,12 C50,12 75,15 98,16',
+      'M12,22 C32,26 58,36 82,44',
+      'M5,5 C22,22 42,48 58,68'
+    ];
+    delicateVeins.forEach(function(v){
+      path(v,{stroke:pal.stripe,'stroke-width':1.2,fill:'none',opacity:0.32,'stroke-linecap':'round'},wg);
+    });
+    // 2. Soft vertical tiger whispers (retracted so they never bleed past the top or bottom edges)
+    var softShadows = [
+      'M25,-48 C30,-28 25,-8 18,6',
+      'M55,-56 C52,-35 46,-12 40,8',
+      'M85,-50 C80,-32 72,-10 65,8'
+    ];
+    softShadows.forEach(function(s){
+      path(s,{stroke:pal.stripe,'stroke-width':2.4,fill:'none',opacity:0.22,'stroke-linecap':'round'},wg);
+    });
+    // 3. Magical Wing Jewels (positioned safely within the lower hindwing cell)
+    var jewels = [
+      {x: 72, y: 70, r: 3.0, f: '#2f62bd', op: 0.75}, 
+      {x: 84, y: 62, r: 2.6, f: '#2f62bd', op: 0.75}, 
+      {x: 94, y: 50, r: 2.4, f: '#e64c3c', op: 0.85}, 
+      {x: 56, y: 74, r: 2.2, f: '#ff9f43', op: 0.85}
+    ];
+    jewels.forEach(function(j){
+      circ(j.x, j.y, j.r, {fill: j.f, opacity: j.op}, wg);
+      circ(j.x + 0.5, j.y - 0.5, j.r * 0.35, {fill: '#ffffff', opacity: 0.6}, wg);
+    });
+    // 4. Slender trailing tail accent
+    path('M114,84 C111,93 105,101 103,105 C101,95 102,86 106,76 Z',{fill:pal.stripe,opacity:0.7},wg);
+  }
+  return wg;
+}
+
+function drawButterfly(parent,sp,scale,prefix){
+  prefix=prefix||'bf';
+  var svgRoot=parent.closest?parent.closest('svg'):null;
+  var defs=svgRoot?ensureDefs(svgRoot):null;
+  var name=sp.butterfly,pal=butterflyPalette(name);
+  var gid=prefix+'Grad'+name.replace(/\s/g,'');
+  if(defs)grad(defs,gid,pal.grad,'34%','28%','78%');
+  if(defs&&name==='Blue Morpho'&&!defs.querySelector('#'+prefix+'sh')){
+    el('filter',{id:prefix+'sh',x:'-60%',y:'-60%',width:'220%',height:'220%'},defs).appendChild(el('feGaussianBlur',{stdDeviation:'7'}));
+  }
+  var s=scale||1;
+  var g=el('g',{class:'bf-img-wrap',transform:'scale('+s+')'},parent);
+  var wL=el('g',{class:'wingL',transform:'scale(-1,1)'},g);
+  var wR=el('g',{class:'wingR'},g);
+  wR.appendChild(buildWingArt(sp,gid,prefix));
+  wL.appendChild(buildWingArt(sp,gid,prefix));
+  
+  // Smoothly tapered body mechanics
+  var body=el('g',{class:'bf-body'},g);
+  ellp(0,26,4.8,18,{fill:'#1f160f'},body);   // Abdomen
+  ellp(0,-2,6.5,12,{fill:'#1f160f'},body);   // Thorax
+  circ(0,-18,4.8,{fill:'#17100a'},body);     // Faceless Head
+  
+  // Perfectly proportioned fine antennae arcs
+  path('M-2,-22 C-10,-36 -17,-42 -15,-52',{stroke:'#17100a','stroke-width':1.2,fill:'none','stroke-linecap':'round'},body);
+  path('M2,-22 C10,-36 17,-42 15,-52',{stroke:'#17100a','stroke-width':1.2,fill:'none','stroke-linecap':'round'},body);
+}
+// ===================== CATERPILLARS (procedural SVG art) =====================
+function caterpillarPalette(name){
+  if(name==='Monarch') return { bg: '#ffffff', stripes: ['#14110b', '#f7d117'], head: '#14110b' };
+  if(name==='Swallowtail') return { bg: '#2ecc71', band: '#111111', spot: '#ffa502', head: '#1e824c' };
+  // Blue Morpho: Exotic maroon/wine body with brilliant neon chartreuse patches and dark bristles
+  return { bg: '#6b1d16', saddle: '#bfff26', bristle: '#3d100b', head: '#42110c' };
+}
+
+function drawCaterpillar(parent,sp,scale,prefix){
+  prefix=prefix||'cp';
+  var svgRoot=parent.closest?parent.closest('svg'):null;
+  var defs=svgRoot?ensureDefs(svgRoot):null;
+  var name=sp.butterfly||'Monarch', pal=caterpillarPalette(name);
+  
+  // Shared volumetric asset to give segments 3D roundness
+  if(defs&&!defs.querySelector('#'+prefix+'VolShade')){
+    var rg=el('radialGradient',{id:prefix+'VolShade',cx:'35%',cy:'35%',r:'65%'},defs);
+    el('stop',{offset:'0%','stop-color':'#ffffff','stop-opacity':0.45},rg);
+    el('stop',{offset:'65%','stop-color':'#666666','stop-opacity':0.15},rg);
+    el('stop',{offset:'100%','stop-color':'#000000','stop-opacity':0.85},rg);
+  }
+  
+  var s=scale||1;
+  var g=el('g',{class:'cp-img-wrap',transform:'scale('+s+')'},parent);
+  
+  // Natural undulating body chain (Tail to Head sequence)
+  var segments=[
+    {x: -68, y: 12, r: 7.5,  type: 'tail'},
+    {x: -55, y: 8,  r: 9.0,  type: 'proleg'},
+    {x: -41, y: 6,  r: 10.5, type: 'proleg'},
+    {x: -27, y: 8,  r: 11.5, type: 'proleg'},
+    {x: -13, y: 11, r: 12.0, type: 'proleg'},
+    {x: 1,   y: 10, r: 12.2, type: 'mid'},
+    {x: 15,  y: 6,  r: 12.0, type: 'thorax'},
+    {x: 29,  y: 4,  r: 11.5, type: 'trueleg'},
+    {x: 42,  y: 6,  r: 10.5, type: 'trueleg'},
+    {x: 54,  y: 10, r: 9.5,  type: 'trueleg'}
+  ];
+  
+  // 1. Render Legs Behind Body
+  segments.forEach(function(seg){
+    if(seg.type==='proleg'){
+      path('M'+(seg.x-3)+','+seg.y+' l-2,11 c0,2 7,2 6,0 l-1,-11',{fill:pal.head,opacity:0.85},g);
+    }else if(seg.type==='trueleg'){
+      path('M'+seg.x+','+seg.y+' l3,9 l4,-2',{stroke:pal.head,'stroke-width':1.8,fill:'none','stroke-linecap':'round'},g);
+    }
+  });
+  
+  // 2. Render Overlapping Textured Segments
+  segments.forEach(function(seg,idx){
+    var segG=el('g',{class:'cp-segment','data-idx':idx,'data-basex':seg.x},g);
+    
+    // REALISM UPGRADE: Distinct species-specific textures and structures
+    if(name==='Blue Morpho'){
+      // Fine hair spikes/bristles sticking out from the margins of every segment
+      path('M'+seg.x+','+(seg.y-seg.r)+' l-3,-7 M'+seg.x+','+(seg.y-seg.r)+' l4,-6 M'+seg.x+','+(seg.y+seg.r)+' l-2,6',{stroke:pal.bristle,'stroke-width':0.95,opacity:0.75},segG);
+      
+      circ(seg.x,seg.y,seg.r,{fill:pal.bg},segG);
+      
+      // Irregular, high-contrast bright warning saddles on key middle segments
+      if(idx >= 3 && idx <= 6){
+        ellp(seg.x,seg.y-seg.r*0.3,seg.r*0.7,seg.r*0.45,{fill:pal.saddle},segG);
+        circ(seg.x-2,seg.y-seg.r*0.2,1.2,{fill:pal.bg},segG); // Interlocking spots
+        circ(seg.x+3,seg.y-seg.r*0.2,1.2,{fill:pal.bg},segG);
+      }
+    } else if(name==='Swallowtail') {
+      circ(seg.x,seg.y,seg.r,{fill:pal.bg},segG);
+      var r=seg.r;
+      // Bold, deep-black structural bands crossing over the back
+      path('M'+(seg.x-r*0.3)+','+(seg.y-r)+' Q'+seg.x+','+(seg.y+r*0.7)+' '+(seg.x+r*0.3)+','+(seg.y-r),{stroke:pal.band,'stroke-width':r*0.35,fill:'none'},segG);
+      // Vivid orange/yellow warning dots embedded directly into the black bands
+      circ(seg.x-r*0.1,seg.y-r*0.4,1.6,{fill:pal.spot},segG);
+      circ(seg.x-r*0.1,seg.y+r*0.3,1.5,{fill:pal.spot},segG);
+    } else {
+      // Monarch: Precision zebra-wrapped warning lines
+      circ(seg.x,seg.y,seg.r,{fill:pal.bg},segG);
+      var r=seg.r;
+      path('M'+(seg.x-r*0.4)+','+(seg.y-r)+' Q'+seg.x+','+(seg.y+r*0.8)+' '+(seg.x+r*0.4)+','+(seg.y-r),{stroke:pal.stripes[0],'stroke-width':r*0.24,fill:'none'},segG);
+      path('M'+(seg.x-r*0.7)+','+(seg.y-r*0.7)+' Q'+seg.x+','+(seg.y+r*0.85)+' '+(seg.x+r*0.7)+','+(seg.y-r*0.7),{stroke:pal.stripes[1],'stroke-width':r*0.14,fill:'none'},segG);
+    }
+    
+    // Spherical overlay mask for 3D depth mapping
+    circ(seg.x,seg.y,seg.r,{fill:'url(#'+prefix+'VolShade)',opacity:0.42,style:'mix-blend-mode:multiply'},segG);
+  });
+  
+  // 3. Faceless Head Capsule
+  var headX=65, headY=13, headR=8.2;
+  var headG=el('g',{class:'cp-head'},g);
+  circ(headX,headY,headR,{fill:pal.head},headG);
+  circ(headX-2,headY-2,headR*0.65,{fill:'#fff',opacity:0.12},headG); 
+  
+  // 4. Species-Specific Appendages & Scent Organs
+  if(name==='Monarch'){
+    // Front and rear warning filaments
+    path('M'+(headX-1)+','+(headY-4)+' C'+(headX+6)+',-10 '+(headX+24)+',-14 '+(headX+22)+',-26',{stroke:pal.head,'stroke-width':1.6,fill:'none','stroke-linecap':'round'},g);
+    path('M'+(headX+2)+','+(headY-3)+' C'+(headX+12)+',-6 '+(headX+26)+',-8 '+(headX+26)+',-20',{stroke:pal.head,'stroke-width':1.3,fill:'none','stroke-linecap':'round'},g);
+    var tailSeg=segments[0];
+    path('M'+tailSeg.x+','+(tailSeg.y-4)+' C'+(tailSeg.x-6)+',-1 '+(tailSeg.x-14)+',-3 '+(tailSeg.x-11)+',-11',{stroke:pal.head,'stroke-width':1.3,fill:'none','stroke-linecap':'round'},g);
+  } else if(name==='Swallowtail') {
+    // REALISM UPGRADE: The Osmeterium (the fleshy, Y-shaped defensive fork that pops out of its head)
+    path('M'+(headX-1)+','+(headY-6)+' Q'+(headX+8)+',-8 '+(headX+14)+',-18 Q'+(headX+18)+',-24 '+(headX+12)+',-28 Q'+(headX+14)+',-22 '+(headX+10)+',-15',{fill:'#ff5e57'},g);
+    path('M'+(headX+1)+','+(headY-6)+' Q'+(headX+12)+',-4 '+(headX+20)+',-12 Q'+(headX+26)+',-16 '+(headX+24)+',-22 Q'+(headX+22)+',-14 '+(headX+14)+',-10',{fill:'#ff5e57'},g);
+  } else if(name==='Blue Morpho') {
+    // Additional delicate cluster of hair bristles around the jaw/facial area
+    path('M'+(headX+4)+','+headY+' l5,3 M'+(headX+3)+','+(headY-4)+' l6,1 M'+(headX+2)+','+(headY+4)+' l4,4',{stroke:pal.bristle,'stroke-width':0.8},g);
+  }
+  
+  return g;
+}
+
+// Peristaltic crawling wave animation
+function animateCrawl(root,opts){
+  opts=opts||{};
+  var speed=opts.speed||4.5, waveAmp=opts.amp||3.5;
+  var t0=performance.now(), raf=null;
+  
+  var segs=root.querySelectorAll('.cp-segment');
+  var head=root.querySelector('.cp-head');
+  
+  function loop(now){
+    if(!root||!root.isConnected){raf=null;return;}
+    var t=(now-t0)/1000;
+    
+    segs.forEach(function(seg){
+      var idx=parseInt(seg.getAttribute('data-idx'),10);
+      var baseX=parseFloat(seg.getAttribute('data-basex'));
+      var wave=Math.sin(t*speed - (idx*0.55));
+      var dx=wave*waveAmp;
+      var dy=wave>0 ? -wave*1.2 : 0;
+      seg.setAttribute('transform','translate('+dx.toFixed(2)+','+dy.toFixed(2)+')');
+    });
+    
+    if(head){
+      var hWave=Math.sin(t*speed - (10*0.55));
+      var hDx=hWave*waveAmp;
+      head.setAttribute('transform','translate('+hDx.toFixed(2)+',0)');
+    }
+    
+    raf=requestAnimationFrame(loop);
+  }
+  raf=requestAnimationFrame(loop);
+  return function(){if(raf)cancelAnimationFrame(raf);};
+}
+
+// Thin adapter: drawCatBody() is the name used by the hatch/metamorphosis
+// scenes; they already wrap their own <g scale(...)> around the caterpillar,
+// so we draw at scale 1 here and let that outer transform do the sizing.
+function drawCatBody(parent,sp,prefix){
+  return drawCaterpillar(parent,sp,1,prefix);
+}
+
+// Where the caterpillar sits along its path for a given journey fraction t (0..1)
+function catGeom(t){
+  t=Math.max(0,Math.min(1,t||0));
+  var x=CAT_X0+(CAT_X1-CAT_X0)*t;
+  return {x:x, y:hillY(x)+6, s:CAT_S0+(CAT_S1-CAT_S0)*t};
+}
+
+// Places the caterpillar into the main breathing-scene SVG at its current progress
+function buildCaterpillar(svg){
+  var sp=SPECIES[G.egg];
+  var t=G.totalBreaths?G.breath/G.totalBreaths:0;
+  var geom=catGeom(t);
+  G.catX=geom.x;G.catScale=geom.s;
+  var host=el('g',{id:'cat-host',transform:'translate('+geom.x.toFixed(1)+','+geom.y.toFixed(1)+')'},svg);
+  var cat=drawCaterpillar(host,sp,geom.s,'scn');
+  G.catHost=host;G.catEl=cat;
+  if(G.catCrawlStop){G.catCrawlStop();G.catCrawlStop=null;}
+  G.catCrawlStop=animateCrawl(cat,{speed:4.2,amp:2.6});
+}
+
+// Advances the caterpillar one breath-cycle's worth of progress and nibbles any leaf it reaches
+function stepCaterpillar(){
+  G.breath=Math.min(G.totalBreaths,G.breath+1);
+  var t=G.totalBreaths?G.breath/G.totalBreaths:0;
+  var geom=catGeom(t);
+  G.catX=geom.x;G.catScale=geom.s;
+  if(G.catHost){
+    G.catHost.style.transition='transform 1s cubic-bezier(.4,0,.2,1)';
+    G.catHost.setAttribute('transform','translate('+geom.x.toFixed(1)+','+geom.y.toFixed(1)+')');
+  }
+  if(G.catEl)G.catEl.setAttribute('transform','scale('+geom.s.toFixed(3)+')');
+  eatNearbyMeals(geom.x);
+}
+function eatNearbyMeals(catX){
+  if(!G.meals)return;
+  G.meals.forEach(function(m){
+    if(!m.eaten&&m.x<=catX+10){
+      m.eaten=true;SOUND.munch();
+      m.el.style.transition='opacity .5s ease';
+      m.el.style.opacity='0';
+    }
+  });
+}
+function startMunch(){stopMunch();G.munchRaf=setInterval(function(){if(G.running)eatNearbyMeals(G.catX);},500);}
+function stopMunch(){if(G.munchRaf){clearInterval(G.munchRaf);G.munchRaf=null;}}
+
+// ---- breath visuals ----
+function buildOrb(svg){const defs=svg.querySelector('defs');grad(defs,'orbGrad',[['0%','#eaf2ff'],['45%','#9db8ec'],['100%','#6f93dc']]);
+  const g=el('g',{id:'orb-g',transform:'translate(400,238) scale(0.5)'},svg);
+  circ(0,0,170,{fill:'url(#orbGrad)',opacity:'0.22',filter:'url(#blur1)'},g);
+  circ(0,0,150,{fill:'none',stroke:'rgba(255,255,255,0.5)','stroke-width':'4'},g);
+  circ(0,0,150,{fill:'none',stroke:'#ffffff','stroke-width':'7','stroke-linecap':'round','stroke-dasharray':CIRC,'stroke-dashoffset':CIRC,transform:'rotate(-90)',id:'breath-ring'},g);
+  circ(0,0,132,{fill:'url(#orbGrad)',opacity:'0.95'},g);
+  circ(-38,-44,40,{fill:'#ffffff',opacity:'0.28',filter:'url(#blur2)'},g);
+  for(let i=0;i<6;i++){const a=i/6*Math.PI*2;ellp(Math.cos(a)*30,Math.sin(a)*30,16,30,{fill:'#ffffff',opacity:'0.16',transform:'rotate('+(i*60)+','+(Math.cos(a)*30)+','+(Math.sin(a)*30)+')'},g);}}
+function setOrbScale(s){const g=document.getElementById('orb-g');if(g)g.setAttribute('transform','translate(400,238) scale('+s.toFixed(3)+')');}
+function buildFlower(svg){const defs=svg.querySelector('defs');
+  grad(defs,'petGrad',[['0%','#ffe2ee'],['55%','#f6a6cf'],['100%','#e07cae']],'45%','32%','72%');
+  grad(defs,'ctrGrad',[['0%','#ffe9a6'],['100%','#f0b24e']],'45%','40%','65%');
+  const g=el('g',{id:'flower-g',transform:'translate(400,238) scale(0.62)'},svg);
+  circ(0,0,150,{id:'flower-glow',fill:'#ffd9ea',opacity:'0.25',filter:'url(#blur1)'},g);
+  circ(0,0,150,{fill:'none',stroke:'rgba(255,255,255,0.5)','stroke-width':'4'},g);
+  circ(0,0,150,{fill:'none',stroke:'#ffffff','stroke-width':'7','stroke-linecap':'round','stroke-dasharray':CIRC,'stroke-dashoffset':CIRC,transform:'rotate(-90)',id:'breath-ring'},g);
+  ellp(-66,72,30,12,{fill:'#6fae4c',transform:'rotate(-28,-66,72)'},g);
+  ellp(70,78,30,12,{fill:'#5fa03f',transform:'rotate(26,70,78)'},g);
+  const N=10;for(let i=0;i<N;i++){ellp(0,-86,30,54,{fill:'url(#petGrad)',stroke:'#d76ba6','stroke-width':'1','stroke-opacity':'0.4',transform:'rotate('+(i/N*360)+')'},g);}
+  const M=8;for(let i=0;i<M;i++){ellp(0,-52,18,34,{fill:'#ffc7e0',stroke:'#e98fc0','stroke-width':'0.8','stroke-opacity':'0.4',transform:'rotate('+(i/M*360+22)+')'},g);}
+  circ(0,0,34,{fill:'url(#ctrGrad)'},g);
+  for(let i=0;i<26;i++){const a=Math.random()*6.28,r=Math.random()*28;circ(Math.cos(a)*r,Math.sin(a)*r,2.4,{fill:'#d98a2e',opacity:'0.8'},g);}
+  circ(0,0,12,{fill:'#caa23a'},g);}
+function setFlowerScale(s,bl){const g=document.getElementById('flower-g');if(g)g.setAttribute('transform','translate(400,238) scale('+s.toFixed(3)+')');const gl=document.getElementById('flower-glow');if(gl)gl.setAttribute('opacity',(0.2+bl*0.55).toFixed(2));}
+function buildWind(svg){
+  windStreaks=[];windLeaves=[];const defs=svg.querySelector('defs');
+  const lg=el('linearGradient',{id:'windGrad',x1:'0',y1:'0',x2:'1',y2:'0'},defs);
+  [['0%','#ffffff','0'],['25%','#ffffff','0.95'],['75%','#ffffff','0.95'],['100%','#ffffff','0']].forEach(s=>el('stop',{offset:s[0],'stop-color':s[1],'stop-opacity':s[2]},lg));
+  const g=el('g',{id:'wind-g'},svg);
+  const ys=[140,176,205,238,262,298,338];
+  ys.forEach((y,i)=>{const amp=10+Math.random()*16,ph=Math.random()*6;let d='M-120,'+y;
+    for(let x=-120;x<=920;x+=40){d+=' Q'+(x+20)+','+(y+Math.sin((x/60)+ph)*amp).toFixed(1)+' '+(x+40)+','+y;}
+    const p=path(d,{fill:'none',stroke:'url(#windGrad)','stroke-width':(1.5+Math.random()*2).toFixed(1),'stroke-linecap':'round','stroke-dasharray':'4 26','stroke-dashoffset':0,opacity:'0.2'},g);
+    windStreaks.push({el:p,off:Math.random()*200});});
+  const lgrp=el('g',{id:'wind-leaves'},svg);
+  for(let i=0;i<7;i++){const le=el('g',{},lgrp);
+    path('M0,0 C-9,-4 -10,7 0,10 C10,7 9,-4 0,0Z',{fill:i%2?'#cde07f':'#9fc96a'},le);
+    path('M0,1 L0,9',{stroke:'#6a9a3a','stroke-width':'1',fill:'none'},le);
+    windLeaves.push({el:le,x:-120-Math.random()*500,y:130+Math.random()*230,spd:0.7+Math.random()*0.7,rot:Math.random()*360,ph:Math.random()*6});}
+}
+function startWind(){G.windLast=performance.now();
+  function loop(now){if(LEVELS[G.level].visual!=='wind'||!document.getElementById('wind-g')){G.windRaf=null;return;}
+    const dt=Math.min(now-G.windLast,60);G.windLast=now;const s=G.windStrength;
+    windStreaks.forEach((st,i)=>{st.off-=(0.4+s*3.4)*(dt/16)*(0.6+i*0.1);st.el.setAttribute('stroke-dashoffset',st.off.toFixed(1));st.el.setAttribute('opacity',(0.1+s*0.62).toFixed(2));});
+    windLeaves.forEach(l=>{l.x+=(0.3+s*5.2)*(dt/16)*l.spd;if(l.x>900){l.x=-80;l.y=130+Math.random()*230;}l.rot+=(s*6)*l.spd;
+      l.el.setAttribute('transform','translate('+l.x.toFixed(1)+','+(l.y+Math.sin((now/600)+l.ph)*14).toFixed(1)+') rotate('+l.rot.toFixed(1)+')');
+      l.el.setAttribute('opacity',(0.12+s*0.75).toFixed(2));});
+    G.windRaf=requestAnimationFrame(loop);}
+  if(G.windRaf)cancelAnimationFrame(G.windRaf);G.windRaf=requestAnimationFrame(loop);}
+function stopWind(){if(G.windRaf){cancelAnimationFrame(G.windRaf);G.windRaf=null;}}
+function setProgress(p){const r=document.getElementById('breath-ring');if(r)r.setAttribute('stroke-dashoffset',(CIRC*(1-p)).toFixed(1));const bar=document.getElementById('phase-bar-fill');if(bar)bar.style.width=(p*100).toFixed(1)+'%';}
+
+// ---- scene assembly (ground, leaves, visual, caterpillar) ----
+function drawLeafShape(g,L,i){const c=i%2?L.leaf2:L.leaf;
+  if(L.leafShape==='petal')path('M0,0 C-14,-10 -14,10 0,16 C14,10 14,-10 0,0Z',{fill:c},g);
+  else if(L.leafShape==='pointed')path('M0,-16 C10,-8 10,8 0,16 C-10,8 -10,-8 0,-16Z',{fill:c},g);
+  else path('M0,0 C-15,-9 -15,9 0,12 C15,9 15,-9 0,0Z',{fill:c},g);
+  path('M0,-10 L0,10',{stroke:'#00000022','stroke-width':'1',fill:'none'},g);}
+function hillY(x){const dx=(x-400)/460,k=Math.sqrt(Math.max(0,1-dx*dx));return 544-68*k;}
+function buildLeaves(svg,L){G.meals=[];const n=17;const LX0=60,LX1=760;
+  for(let i=0;i<n;i++){const t=(i+0.5)/n;const x=LX0+(LX1-LX0)*t;const y=hillY(x)-6+(i%2?2:-2);const sc=0.85+Math.random()*0.35;
+    const g=el('g',{transform:'translate('+x.toFixed(1)+','+y.toFixed(1)+') scale('+sc.toFixed(2)+')'},svg);
+    drawLeafShape(g,L,i);
+    G.meals.push({el:g,x:x,y:y,sc:sc});}}
+function buildScene(){
+  const svg=document.getElementById('stage-svg');svg.innerHTML='';
+  const L=LEVELS[G.level];
+  const defs=el('defs',{},svg);
+  el('filter',{id:'blur1',x:'-60%',y:'-60%',width:'220%',height:'220%'},defs).appendChild(el('feGaussianBlur',{stdDeviation:'10'}));
+  el('filter',{id:'blur2',x:'-40%',y:'-40%',width:'180%',height:'180%'},defs).appendChild(el('feGaussianBlur',{stdDeviation:'4'}));
+  ellp(400,560,460,80,{fill:L.ground,opacity:'0.9'},svg);
+  ellp(400,544,460,68,{fill:L.ground,opacity:'0.6'},svg);
+  if(L.visual==='wind')buildWind(svg);
+  else if(L.visual==='flower')buildFlower(svg);
+  else buildOrb(svg);
+  buildLeaves(svg,L);
+  buildCaterpillar(svg);
+}
+
+// ===================== PETALS =====================
+function spawnPetals(host,color){for(let i=0;i<10;i++){const p=document.createElement('div');p.className='petal';const sz=6+Math.random()*8;p.style.width=sz+'px';p.style.height=(sz*0.7)+'px';p.style.left=Math.random()*100+'%';p.style.background=color;p.style.borderRadius='60% 60% 60% 0';p.style.animationDuration=(9+Math.random()*8)+'s';p.style.animationDelay=(-Math.random()*12)+'s';const inner=document.createElement('div');inner.style.cssText='width:100%;height:100%;animation:drift '+(3+Math.random()*3)+'s ease-in-out infinite;background:inherit;border-radius:inherit';p.appendChild(inner);host.appendChild(p);}}
+
+// ===================== WHY MODAL =====================
+function openWhy(){SOUND.ensure();SOUND.resume();document.getElementById('why-modal').classList.add('show');speak('Breathing slowly tells your brain that you are safe. It calms big feelings, helps you focus, and you can do it anywhere.',0.84);}
+function closeWhy(){document.getElementById('why-modal').classList.remove('show');if('speechSynthesis'in window)speechSynthesis.cancel();}
+
+// ===================== FLOW =====================
+function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function goEgg(){SOUND.ensure();SOUND.resume();show('egg');speak('Choose an egg. Each one grows into a different butterfly.',0.86);}
+
+function buildEggCards(){
+  const grid=document.getElementById('egg-grid');grid.innerHTML='';
+  SPECIES.forEach((sp,i)=>{
+    const card=document.createElement('div');card.className='egg-card';card.id='eggc-'+i;
+    const svg=el('svg',{viewBox:'0 0 120 130',width:'100%',height:'118'});
+    const defs=el('defs',{},svg);grad(defs,'eg'+i,[['0%','#ffffff'],['38%',sp.eggShell],['100%',sp.eggSpot]],'42%','34%','70%');
+    ellp(60,116,42,10,{fill:'#000',opacity:'0.08'},svg);
+    for(let k=0;k<7;k++){const a=Math.PI+k/6*Math.PI;path('M'+(60+Math.cos(a)*40)+','+(112+Math.sin(a)*8)+' q'+(Math.cos(a)*10)+',-6 '+(Math.cos(a)*4)+',-12',{stroke:'#9c7a4a','stroke-width':'3',fill:'none','stroke-linecap':'round',opacity:'0.7'},svg);}
+    ellp(60,66,34,44,{fill:'url(#eg'+i+')',stroke:sp.eggSpot,'stroke-width':'1.5'},svg);
+    ellp(48,50,11,16,{fill:'#ffffff',opacity:'0.45'},svg);
+    for(let k=0;k<10;k++){const ang=Math.random()*6.28,rr=Math.random()*26;circ(60+Math.cos(ang)*rr,66+Math.sin(ang)*rr*1.25,1.6+Math.random()*1.6,{fill:sp.eggSpot,opacity:'0.55'},svg);}
+    card.appendChild(svg);
+    const nm=document.createElement('div');nm.className='egg-name';nm.textContent=sp.egg;
+    const sub=document.createElement('div');sub.className='egg-sub';sub.textContent=sp.sub||sp.butterfly;
+    card.appendChild(nm);card.appendChild(sub);card.onclick=()=>selectEgg(i);grid.appendChild(card);
+  });
+}
+function selectEgg(i){G.egg=i;document.querySelectorAll('.egg-card').forEach(c=>c.classList.remove('sel'));document.getElementById('eggc-'+i).classList.add('sel');
+  const b=document.getElementById('egg-go');b.disabled=false;b.style.opacity='1';b.textContent='Hatch the '+SPECIES[i].egg+' \u25B8';SOUND.ensure();SOUND.resume();SOUND.chime('in');}
+
+function startJourney(){G.totalBreaths=LEVELS.reduce((a,L)=>a+L.cycles,0);G.breath=0;const geom=catGeom(0);G.catX=geom.x;G.catScale=geom.s;showHatch();}
+function replayBreathing(){clearSpark();G.totalBreaths=LEVELS.reduce((a,L)=>a+L.cycles,0);G.breath=0;const geom=catGeom(0);G.catX=geom.x;G.catScale=geom.s;runLevel(0);}
+
+function runLevel(idx){
+  G.level=idx;G.running=true;const L=LEVELS[idx];
+  document.getElementById('breathe').className='screen '+L.hue;
+  document.getElementById('bh-lvl').textContent='Level '+L.id+' of 3';
+  document.getElementById('bh-tech').textContent=L.tech;
+  const dots=document.getElementById('cycle-dots');dots.innerHTML='';
+  for(let i=0;i<L.cycles;i++){const d=document.createElement('div');d.className='dot';d.id='dot-'+i;dots.appendChild(d);}
+  breathLevel=0;G.windStrength=0.25;
+  buildScene();
+  if(L.visual==='wind'){setProgress(0);} else if(L.visual==='flower'){setFlowerScale(0.62,0);} else {setOrbScale(0.5);}
+  document.getElementById('phase-label').textContent='';document.getElementById('phase-count').textContent='';
+  document.getElementById('done-overlay').classList.remove('show');
+  show('breathe');
+  SOUND.startBed(idx);startMunch();if(L.visual==='wind')startWind();
+  speak(L.intro,0.84);
+  const startT=setTimeout(()=>{
+    document.getElementById('phase-label').textContent='Get ready';
+    let cnt=3;document.getElementById('phase-count').textContent=cnt;
+    const cd=setInterval(()=>{cnt--;if(cnt>0){document.getElementById('phase-count').textContent=cnt;}else{clearInterval(cd);document.getElementById('phase-count').textContent='';beginCycles(idx);}},1000);
+    G.timers.push(cd);
+  },1000);
+  G.timers.push(startT);
+}
+function beginCycles(idx){const L=LEVELS[idx];let cycle=0;
+  function nextCycle(){if(!G.running)return;if(cycle>=L.cycles){finishLevel(idx);return;}cycle++;
+    runPhases(L.phases,0,()=>{const d=document.getElementById('dot-'+(cycle-1));if(d)d.classList.add('on');stepCaterpillar();nextCycle();});}
+  nextCycle();}
+function runPhases(phases,pi,done){if(!G.running)return;if(pi>=phases.length){done();return;}const ph=phases[pi];startPhase(ph);animatePhase(ph,()=>runPhases(phases,pi+1,done));}
+function startPhase(ph){const lab=document.getElementById('phase-label');lab.textContent=ph.label;lab.style.color=ph.k==='out'?'#5a7a52':(ph.k==='hold'?'#6a6a86':'#3f5a39');speak(ph.label,0.8);SOUND.chime(ph.k);const vis=LEVELS[G.level].visual;if(ph.k==='out')SOUND.whoosh(ph.secs);if(vis==='flower'&&ph.k==='smell')SOUND.shimmer(ph.secs);}
+function animatePhase(ph,done){
+  const dur=ph.secs*1000,t0=performance.now(),start=breathLevel;
+  let end=(ph.k==='in'||ph.k==='smell')?1.0:(ph.k==='out')?0.0:start;
+  const wStart=G.windStrength, wEnd=(ph.k==='out')?1.0:0.2;
+  const vis=LEVELS[G.level].visual;
+  const numEl=document.getElementById('phase-count');
+  function frame(now){if(!G.running)return;let p=Math.min((now-t0)/dur,1);const e=p<0.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+    breathLevel=start+(end-start)*e;
+    if(vis==='wind'){G.windStrength=wStart+(wEnd-wStart)*e;}
+    else if(vis==='flower'){setFlowerScale(0.62+breathLevel*0.38,breathLevel);}
+    else {setOrbScale(0.5+breathLevel*0.5);}
+    setProgress(p);numEl.textContent=Math.max(1,Math.ceil(ph.secs-p*ph.secs));
+    if(p<1)G.raf=requestAnimationFrame(frame);else done();}
+  G.raf=requestAnimationFrame(frame);}
+function finishLevel(idx){
+  G.running=false;stopMunch();stopWind();
+  if(G.raf){cancelAnimationFrame(G.raf);G.raf=null;}
+  G.timers.forEach(t=>clearInterval(t));G.timers=[];
+  document.querySelectorAll('.dot').forEach(d=>d.classList.add('on'));
+  const L=LEVELS[idx];
+  document.getElementById('phase-label').textContent='';document.getElementById('phase-count').textContent='';
+  const dh=document.getElementById('done-h'),dp=document.getElementById('done-p'),db=document.getElementById('done-btn');
+  dh.textContent=L.done.h;dp.textContent=L.done.p;
+  if(idx<2){db.textContent='Next breath \u25B8';db.onclick=()=>{document.getElementById('done-overlay').classList.remove('show');runLevel(idx+1);};}
+  else{db.textContent='See what happens \u25B8';db.onclick=()=>{document.getElementById('done-overlay').classList.remove('show');showCocoonForming();};}
+  document.getElementById('done-overlay').classList.add('show');speak(L.done.h,0.88);
+}
+function skipLevel(){if(!G.running&&document.getElementById('done-overlay').classList.contains('show'))return;if(G.raf){cancelAnimationFrame(G.raf);G.raf=null;}G.timers.forEach(t=>clearInterval(t));G.timers=[];finishLevel(G.level);}
+
+// ===================== GOOD WORK: caterpillar spins into its cocoon =====================
+function showCocoonForming(){
+  SOUND.startBed(1);clearSpark();
+  const svg=document.getElementById('cel-svg');svg.innerHTML='';
+  const defs=el('defs',{},svg);
+  el('filter',{id:'cb',x:'-50%',y:'-50%',width:'200%',height:'200%'},defs).appendChild(el('feGaussianBlur',{stdDeviation:'6'}));
+  circ(280,170,150,{fill:'#fff7e8',opacity:'0.7',filter:'url(#cb)'},svg);
+  path('M120,40 Q260,30 430,52',{stroke:'#7a5a3a','stroke-width':'8',fill:'none','stroke-linecap':'round'},svg);
+  const sp=SPECIES[G.egg];
+  const chr=el('g',{id:'chr',transform:'translate(280,60)',opacity:'0'},svg);
+  line(0,0,0,48,{stroke:'rgba(255,255,255,.55)','stroke-width':'2'},chr);
+  const body0=el('g',{transform:'translate(0,65)'},chr);
+  const cgid='cchrysGrad-'+Math.random().toString(36).substr(2,9);
+  const cgrad=el('radialGradient',{id:cgid,cx:'35%',cy:'30%',r:'65%'},defs);
+  el('stop',{offset:'0%','stop-color':'#ffffff','stop-opacity':'0.35'},cgrad);
+  el('stop',{offset:'40%','stop-color':sp.chrys,'stop-opacity':'1'},cgrad);
+  el('stop',{offset:'85%','stop-color':'#1a1105','stop-opacity':'0.4'},cgrad);
+  el('stop',{offset:'100%','stop-color':'#000000','stop-opacity':'0.75'},cgrad);
+  path('M0,-20 C-62,4 -56,164 0,236 C64,164 56,4 0,-20 Z',{fill:'url(#'+cgid+')',stroke:sp.deep,'stroke-width':'2.5','stroke-opacity':'0.3'},body0);
+  path('M-22,56 Q0,76 22,56 M-24,104 Q0,128 24,104 M-20,152 Q0,174 20,152',{stroke:sp.deep,'stroke-width':'2.2',fill:'none',opacity:'0.45','stroke-linecap':'round'},body0);
+  ellp(-16,24,15,30,{fill:'#ffffff',opacity:'0.22'},body0);
+  const cat=el('g',{id:'mcat',transform:'translate(280,120) scale(3.25)'},svg);drawCatBody(cat,sp,'meta');
+  const title=document.getElementById('cel-title'),msg=document.getElementById('cel-msg'),btn=document.getElementById('cel-btn');
+  title.textContent='';msg.textContent='';title.classList.remove('fade-in');msg.classList.remove('fade-in');
+  btn.style.display='none';
+  show('celebrate');
+  speak('Good work breathing. Now, a quiet change.',0.84);
+  let w = 0;
+  const totalDuration = 150; // Smooth, extended spinning cycle
+
+  const spinningAnimation = setInterval(() => {
+    w++;
+
+    // 1. Vertical dynamic stretching (Y-axis)
+    // Varies smoothly between ~3.10 and ~3.45 to simulate organic vertical contraction
+    const scaleY = (3.28 + Math.sin(w * 0.12) * 0.18).toFixed(3);
+
+    // 2. Volume preservation (X-axis)
+    // When an insect stretches vertically, it naturally gets slightly skinnier horizontally.
+    // We use Cosine so it opposes the Sine wave perfectly.
+    const scaleX = (3.25 + Math.cos(w * 0.12) * 0.08).toFixed(3);
+
+    // 3. Natural vertical weaving & climbing
+    // Sweeps left-to-right (weaveX) while gently inching upwards or bobbing (weaveY)
+    const weaveX = (Math.sin(w * 0.18) * 14).toFixed(2);
+    const weaveY = (Math.cos(w * 0.08) * 8).toFixed(2);
+
+    // Apply tracking base (280, 120) combined with our vertical/horizontal weave offsets
+    const posX = 280 + parseFloat(weaveX);
+    const posY = 120 + parseFloat(weaveY);
+
+    // Apply the transformation matrix to the vertically-oriented caterpillar
+    cat.setAttribute('transform', `translate(${posX}, ${posY}) scale(${scaleX}, ${scaleY})`);
+
+    if (w > totalDuration) {
+      clearInterval(spinningAnimation);
+    }
+  }, 45); // Snappy frame timing with tiny, sub-pixel steps for buttery smoothness
+  setTimeout(()=>{
+    cat.style.transition='transform 1.1s ease, opacity 1.1s ease';cat.style.transform='translate(280px,118px) scale(0.4) rotate(360deg)';cat.style.opacity='0';
+    chr.style.transition='opacity 1.1s ease';chr.setAttribute('opacity','1');
+    SOUND.chime('hold');
+  },1700);
+  setTimeout(()=>{
+    cat.remove();
+    title.textContent='Good work!';
+    msg.innerHTML='You breathed your way from egg to chrysalis. Now your little '+sp.butterfly+' rests inside, listening, waiting for what comes next.';
+    title.classList.add('fade-in');msg.classList.add('fade-in');
+    btn.style.display='inline-block';btn.textContent='Continue \u25B8';btn.onclick=goListeningIntro;
+    burstSparkles();
+  },3000);
+}
+
+// ===================== PART 2: THE LISTENING JOURNEY =====================
+let selectedEmo=-1;
+let LG={emotion:null, level:0, catches:0, running:false, crackStage:0,
+        nextTimer:null, windowTimer:null, windowOpen:false,
+        sway:{raf:null}, particles:{raf:null,items:[],flashEl:null,flashTimer:null}};
+const LISTEN_LEVELS=[
+  {gapMin:2000, gapMax:3600, bgVol:1.0},
+  {gapMin:3200, gapMax:6800, bgVol:1.45},
+  {gapMin:4500, gapMax:9500, bgVol:2.0}
+];
+const CATCH_WINDOW=1300;
+
+function buildEmoCards(){
+  const grid=document.getElementById('emo-grid');grid.innerHTML='';
+  EMOTIONS.forEach((emo,i)=>{
+    const card=document.createElement('div');card.className='egg-card';card.id='emoc-'+i;
+    const swatch=document.createElement('div');
+    swatch.style.cssText='width:60px;height:60px;margin:0 auto;border-radius:50%;background:linear-gradient(135deg,'+emo.start+','+emo.end+');box-shadow:0 6px 16px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center;font-size:1.5rem';
+    swatch.textContent=emo.icon;
+    const nm=document.createElement('div');nm.className='egg-name';nm.textContent=emo.name;
+    const sub=document.createElement('div');sub.className='egg-sub';sub.textContent=emo.sub;
+    card.appendChild(swatch);card.appendChild(nm);card.appendChild(sub);
+    card.onclick=()=>selectEmo(i);
+    grid.appendChild(card);
+  });
+}
+function selectEmo(i){selectedEmo=i;
+  document.querySelectorAll('#emo-grid .egg-card').forEach((c,idx)=>c.classList.toggle('sel',idx===i));
+  const b=document.getElementById('emo-go');b.disabled=false;b.style.opacity='1';b.textContent='Begin listening \u25B8';
+  SOUND.ensure();SOUND.resume();SOUND.chime('in');}
+
+function goListeningIntro(){
+  selectedEmo=-1;buildEmoCards();
+  const b=document.getElementById('emo-go');b.disabled=true;b.style.opacity='.45';b.textContent='Choose a feeling first';
+  show('emo-pick');
+  speak('Now, a new kind of stillness. A chrysalis is forming. Choose how you feel right now, and we will listen together.',0.85);
+}
+function startListening(){
+  if(selectedEmo<0)return;
+  LG.emotion=EMOTIONS[selectedEmo];LG.level=0;LG.catches=0;LG.crackStage=0;
+  SOUND.ensure();SOUND.resume();SOUND.stopBed();
+  show('listen');
+  runListenLevel(0);
+}
+function runListenLevel(idx){
+  LG.level=idx;LG.catches=0;LG.running=true;
+  const emo=LG.emotion;
+  document.getElementById('ls-lvl').textContent='Level '+(idx+1)+' of 3';
+  document.getElementById('ls-tech').textContent=emo.name+' \u00B7 Listening';
+  const dots=document.getElementById('catch-dots');dots.innerHTML='';
+  for(let i=0;i<3;i++){const d=document.createElement('div');d.className='dot';d.id='catch-dot-'+i;dots.appendChild(d);}
+  document.getElementById('listen-done-overlay').classList.remove('show');
+  buildListenScene();
+  LSOUND.startAmbience(emo,LISTEN_LEVELS[idx]);
+  const targetName=emo.id==='sadness'?'frog':(emo.id==='anger'?'rain ping':'cricket');
+  speak(idx===0?('Close your eyes if it helps. Listen for the '+targetName+', and press space the moment you hear it.'):('Level '+(idx+1)+'. Listen closely.'),0.85);
+  clearTimeout(LG.nextTimer);
+  LG.nextTimer=setTimeout(fireTarget,2400+Math.random()*1200);
+}
+function fireTarget(){
+  if(!LG.running)return;
+  LSOUND.playTarget(LG.emotion);
+  LG.windowOpen=true;
+  clearTimeout(LG.windowTimer);
+  LG.windowTimer=setTimeout(()=>{if(LG.windowOpen){LG.windowOpen=false;onMiss();}},CATCH_WINDOW);
+  const cfg=LISTEN_LEVELS[LG.level];
+  const gap=cfg.gapMin+Math.random()*(cfg.gapMax-cfg.gapMin);
+  LG.nextTimer=setTimeout(fireTarget,gap);
+}
+function tryCatch(){
+  if(!LG.running)return;
+  if(LG.windowOpen){LG.windowOpen=false;clearTimeout(LG.windowTimer);onCatch();}
+  else onEarlyPress();
+}
+window.addEventListener('keydown',function(e){
+  if((e.code==='Space'||e.key===' ')&&document.getElementById('listen').classList.contains('active')){
+    e.preventDefault();tryCatch();
+  }
+});
+function onCatch(){
+  LG.catches++;
+  const d=document.getElementById('catch-dot-'+(LG.catches-1));if(d)d.classList.add('on');
+  sparkleAtChrysalis();SOUND.chime('smell');
+  const body=document.getElementById('chrys-body');
+  if(body){body.style.transition='transform .3s ease';body.style.transformBox='fill-box';body.style.transformOrigin='center';
+    body.style.transform='scale(1.06)';setTimeout(()=>{body.style.transform='scale(1)';},300);}
+  if(LG.catches>=3)finishListenLevel();
+}
+function onMiss(){
+  const chrysG=document.getElementById('chrys-g');if(!chrysG)return;
+  chrysG.style.filter='brightness(0.92)';setTimeout(()=>{chrysG.style.filter='';},200);
+}
+function onEarlyPress(){
+  const chrysG=document.getElementById('chrys-g');if(!chrysG)return;
+  chrysG.style.filter='brightness(0.96)';setTimeout(()=>{chrysG.style.filter='';},120);
+}
+function sparkleAtChrysalis(){burstSparklesEl(document.getElementById('listen-spark'),10);}
+function finishListenLevel(){
+  LG.running=false;
+  clearTimeout(LG.nextTimer);clearTimeout(LG.windowTimer);LG.windowOpen=false;
+  const emo=LG.emotion;
+  LG.crackStage=LG.level+1;
+  buildListenScene();
+  const dh=document.getElementById('ld-h'),dp=document.getElementById('ld-p'),db=document.getElementById('ld-btn');
+  dh.textContent=LG.level<2?'Caught it':'Almost there';
+  dp.textContent=emo.doneMsg[LG.level]||'';
+  if(LG.level<2){
+    db.textContent='Next level \u25B8';
+    db.onclick=()=>{document.getElementById('listen-done-overlay').classList.remove('show');runListenLevel(LG.level+1);};
+  }else{
+    db.textContent='Watch it open \u25B8';
+    db.onclick=()=>{document.getElementById('listen-done-overlay').classList.remove('show');showFinalEmergence();};
+  }
+  document.getElementById('listen-done-overlay').classList.add('show');
+  speak(dp.textContent,0.86);
+}
+function skipListenLevel(){
+  if(!LG.running)return;
+  clearTimeout(LG.nextTimer);clearTimeout(LG.windowTimer);LG.windowOpen=false;
+  LG.catches=3;
+  document.querySelectorAll('#catch-dots .dot').forEach(d=>d.classList.add('on'));
+  finishListenLevel();
+}
+
+// ---- chrysalis scene: misty blobs, leaf, thread, swaying cracked chrysalis ----
+function buildListenScene(){
+  const svg=document.getElementById('listen-svg');svg.innerHTML='';
+  const emo=LG.emotion;const blend=LG.crackStage/3;
+  document.getElementById('listen').style.background='linear-gradient(180deg,'+lerpColor(emo.start,'#000000',0.08)+' 0%,'+lerpColor(emo.start,emo.end,blend*0.6)+' 55%,'+lerpColor(emo.start,emo.end,blend*0.35)+' 100%)';
+  const defs=el('defs',{},svg);
+  el('filter',{id:'lblur1',x:'-60%',y:'-60%',width:'220%',height:'220%'},defs).appendChild(el('feGaussianBlur',{stdDeviation:'16'}));
+  for(let i=0;i<4;i++){
+    circ(110+i*190+Math.random()*50,80+Math.random()*200,100+Math.random()*60,
+      {fill:lerpColor(emo.start,emo.end,Math.min(1,blend*0.8+Math.random()*0.15)),opacity:'0.26',filter:'url(#lblur1)'},svg);
+  }
+  buildWeatherParticles(svg,emo);
+  const hang=el('g',{id:'hang-g',transform:'translate(400,70)'},svg);
+  const leafG=el('g',{id:'leaf-g',transform:'scale(2.6)'},hang);
+  drawLeafShape(leafG,{leaf:emo.leafTint,leaf2:emo.leafTint,leafShape:'oval'},0);
+  line(0,30,0,78,{stroke:'rgba(255,255,255,.55)','stroke-width':'2'},hang);
+  const chrysG=el('g',{id:'chrys-g',transform:'translate(0,88)'},hang);
+  drawChrysalis(chrysG,emo,LG.crackStage,blend);
+  if(emo.id==='anger')addLightningFlash(svg);
+  startSway(emo.storm[LG.level]);
+}
+function drawChrysalis(g, emo, crackStage, blend) {
+  // Create unique gradients for a true 3D volumetric sphere/cylinder look
+  const defs = g.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'defs');
+  g.appendChild(defs);
+  
+  const fillCol = lerpColor(emo.start, emo.end, Math.min(1, blend * 0.6 + 0.08));
+  
+  // 1. 3D Volumetric Shading Gradient
+  const gradId = `chrysGrad-${Math.random().toString(36).substr(2, 9)}`;
+  const grad = el('radialGradient', { id: gradId, cx: '35%', cy: '30%', r: '65%' }, defs);
+  el('stop', { offset: '0%', 'stop-color': '#ffffff', 'stop-opacity': '0.35' }, grad); // Smooth 3D highlight
+  el('stop', { offset: '40%', 'stop-color': fillCol, 'stop-opacity': '1' }, grad);
+  el('stop', { offset: '85%', 'stop-color': '#1a1105', 'stop-opacity': '0.4' }, grad);   // Core shadow
+  el('stop', { offset: '100%', 'stop-color': '#000000', 'stop-opacity': '0.75' }, grad); // Edge rim darkness
+
+  const body = el('g', { id: 'chrys-body' }, g);
+
+  // 2. Main Body Shape — Scaled 2X & organically altered for asymmetry
+  // The curves are carefully offset to mimic a monarch/swallowtail chrysalis's natural curve.
+  path('M0,-20 C-62,4 -56,164 0,236 C64,164 56,4 0,-20 Z', {
+    fill: fillCol,
+    stroke: emo.spotTint,
+    'stroke-width': '2.5',
+    'stroke-opacity': '0.3'
+  }, body);
+
+  // Overlay the 3D lighting gradient directly on top of the base color
+  path('M0,-20 C-62,4 -56,164 0,236 C64,164 56,4 0,-20 Z', {
+    fill: `url(#${gradId})`
+  }, body);
+
+  // 3. Realistic 3D Segment Ridges (Curved drastically around the 3D volume, scaled 2X)
+  path('M-22,56 Q0,76 22,56 M-24,104 Q0,128 24,104 M-20,152 Q0,174 20,152', {
+    stroke: emo.spotTint,
+    'stroke-width': '2.2',
+    fill: 'none',
+    opacity: '0.45',
+    'stroke-linecap': 'round'
+  }, body);
+
+  // Secondary fine-texture details (creases near the abdominal tip)
+  path('M-12,185 Q0,198 12,185 M-6,208 Q0,216 6,208', {
+    stroke: '#000000',
+    'stroke-width': '1.5',
+    fill: 'none',
+    opacity: '0.25'
+  }, body);
+
+  // 4. Soft Rim Glare & Sheen (Scaled 2X and shifted for natural overhead lighting angle)
+  ellp(-16, 24, 15, 30, { 
+    fill: '#ffffff', 
+    opacity: '0.22', 
+    transform: 'rotate(-10, -16, 24)' 
+  }, body);
+
+  // 5. Crack Overlays (Scaled 2X, made more jagged and branch-like for structural realism)
+  const crackG = el('g', { id: 'crack-g' }, g);
+  
+  if (crackStage >= 1) {
+    // Stage 1: Upper fracture
+    path('M-4,-12 L6,36 L-4,60 M6,36 L16,42', {
+      stroke: '#fff7da', 'stroke-width': '2.2', fill: 'none', opacity: '0.75', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+    }, crackG);
+  }
+  
+  if (crackStage >= 2) {
+    // Stage 2: Mid-body split with a widening structural gap (simulated by the glowing ellipse)
+    path('M6,36 L-6,84 L8,120 M-6,84 L-20,96', {
+      stroke: '#fff7da', 'stroke-width': '2.8', fill: 'none', opacity: '0.9', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+    }, crackG);
+    ellp(0, 60, 10, 22, { fill: '#fff7da', opacity: '0.28' }, crackG);
+  }
+  
+  if (crackStage >= 3) {
+    // Stage 3: Deep final structural rupture reaching toward the base
+    path('M8,120 L-6,168 L4,212 M-6,168 L4,180', {
+      stroke: '#ffffff', 'stroke-width': '3.4', fill: 'none', opacity: '0.98', 'stroke-linecap': 'round', 'stroke-linejoin': 'round'
+    }, crackG);
+    ellp(0, 120, 14, 32, { fill: '#fff7da', opacity: '0.38' }, crackG);
+  }
+}
+
+// ---- weather: rain / lightning / fireflies (purely ambient, never tied to the target sound) ----
+function buildWeatherParticles(svg,emo){
+  stopParticles();
+  const host=el('g',{id:'wx-g'},svg);
+  const items=[];
+  if(emo.id==='sadness'||emo.id==='anger'){
+    const n=emo.id==='anger'?34:18;
+    for(let i=0;i<n;i++){
+      const len=9+Math.random()*7,w=len*0.34;
+      const d='M0,0 C'+(-w).toFixed(1)+','+(len*0.55).toFixed(1)+' '+(-w).toFixed(1)+','+len.toFixed(1)+' 0,'+len.toFixed(1)+' C'+w.toFixed(1)+','+len.toFixed(1)+' '+w.toFixed(1)+','+(len*0.55).toFixed(1)+' 0,0 Z';
+      const ln=path(d,{fill:'rgba(255,255,255,.5)'},host);
+      items.push({el:ln,x:Math.random()*800,y:Math.random()*560,spd:3+Math.random()*3+(emo.id==='anger'?3:0),drift:emo.id==='anger'?2.4:0.6});
+    }
+  }else if(emo.id==='calm'){
+    for(let i=0;i<14;i++){
+      const c=circ(0,0,1.6+Math.random()*1.8,{fill:'#fff3c4',opacity:'0.7'},host);
+      items.push({el:c,x:Math.random()*800,y:Math.random()*560,phase:Math.random()*6.28,spd:0.4+Math.random()*0.5,fly:true});
+    }
+  }
+  LG.particles={raf:null,items:items,last:undefined,flashEl:null,flashTimer:null};
+  runParticles();
+}
+function runParticles(){
+  function loop(now){
+    const st=LG.particles;if(!st||!st.items)return;
+    const dt=Math.min(now-(st.last||now),40);st.last=now;
+    st.items.forEach(p=>{
+      if(p.fly){
+        p.phase+=dt*0.0028*p.spd*10;
+        const ny=(p.y-(now*0.01*p.spd)%560+560)%560;
+        p.el.setAttribute('cx',(p.x+Math.sin(p.phase)*16).toFixed(1));
+        p.el.setAttribute('cy',ny.toFixed(1));
+        p.el.setAttribute('opacity',(0.4+0.4*Math.sin(p.phase*1.3)).toFixed(2));
+      }else{
+        p.y+=p.spd*(dt/16);p.x+=p.drift*(dt/16);
+        if(p.y>580){p.y=-20;p.x=Math.random()*800;}
+        p.el.setAttribute('transform','translate('+p.x.toFixed(1)+','+p.y.toFixed(1)+') rotate('+(p.drift*5).toFixed(1)+')');
+      }
+    });
+    LG.particles.raf=requestAnimationFrame(loop);
+  }
+  LG.particles.raf=requestAnimationFrame(loop);
+}
+function stopParticles(){
+  if(LG.particles){
+    if(LG.particles.raf)cancelAnimationFrame(LG.particles.raf);
+    if(LG.particles.flashTimer)clearTimeout(LG.particles.flashTimer);
+  }
+  LG.particles={raf:null,items:[],flashEl:null,flashTimer:null};
+}
+function addLightningFlash(svg){
+  const rect=el('rect',{x:'-20',y:'-20',width:'840',height:'600',fill:'#fff',opacity:'0',id:'wx-flash'},svg);
+  LG.particles.flashEl=rect;
+  scheduleFlash();
+}
+function scheduleFlash(){
+  const st=LG.particles;if(!st||!st.flashEl)return;
+  const delay=2200+Math.random()*4500;
+  st.flashTimer=setTimeout(()=>{
+    const f=LG.particles.flashEl;if(!f||!f.isConnected)return;
+    f.style.transition='opacity .07s ease';f.style.opacity='0.4';
+    setTimeout(()=>{if(f.isConnected){f.style.transition='opacity .5s ease';f.style.opacity='0';}},85);
+    scheduleFlash();
+  },delay);
+}
+
+// ---- sway: organic wind on the hanging leaf + chrysalis, violence tied to storm factor ----
+function startSway(storm){
+  stopSway();
+  let t0=performance.now(),nextGust=0,gustAmt=0,gustT=-9999;
+  const freqMul=1+storm*0.9;
+  function loop(now){
+    const t=(now-t0)/1000;
+    if(now>nextGust){gustAmt=storm*(6+Math.random()*10)*(Math.random()<0.5?-1:1);gustT=now;nextGust=now+900+Math.random()*(2600-storm*1500);}
+    const age=now-gustT,attack=140,decayDur=650;
+    const env=age<attack?age/attack:Math.max(0,1-(age-attack)/decayDur);
+    const base=Math.sin(t*0.6*freqMul)*storm*5+Math.sin(t*1.7*freqMul+1.3)*storm*2;
+    const angle=base+gustAmt*env;
+    const hang=document.getElementById('hang-g');
+    if(hang)hang.setAttribute('transform','translate(400,70) rotate('+angle.toFixed(2)+',0,0)');
+    const chrysG=document.getElementById('chrys-g');
+    if(chrysG)chrysG.setAttribute('transform','translate(0,88) rotate('+(angle*0.4).toFixed(2)+',0,-30)');
+    LG.sway.raf=requestAnimationFrame(loop);
+  }
+  LG.sway.raf=requestAnimationFrame(loop);
+}
+function stopSway(){if(LG.sway&&LG.sway.raf){cancelAnimationFrame(LG.sway.raf);LG.sway.raf=null;}}
+
+// ===================== FINAL: THE CHRYSALIS OPENS =====================
+function showFinalEmergence(){
+  const sp=SPECIES[G.egg],emo=LG.emotion;
+  stopSway();stopParticles();LSOUND.stop();
+  SOUND.startBed(1);clearSpark();
+  const btn0=document.getElementById('cel-btn');btn0.style.display='inline-block';btn0.textContent='Begin again';btn0.onclick=replayBreathing;
+  const celEl=document.getElementById('celebrate');
+  celEl.style.background='linear-gradient(180deg,'+lerpColor(emo.start,'#000000',0.06)+' 0%,'+lerpColor(emo.start,emo.end,0.12)+' 55%,'+lerpColor(emo.start,emo.end,0.04)+' 100%)';
+  const svg=document.getElementById('cel-svg');svg.innerHTML='';
+  const defs=el('defs',{},svg);
+  el('filter',{id:'fblur1',x:'-60%',y:'-60%',width:'220%',height:'220%'},defs).appendChild(el('feGaussianBlur',{stdDeviation:'10'}));
+  const blobs=[];
+  for(let i=0;i<4;i++){
+    const b=circ(80+i*140+Math.random()*40,60+Math.random()*60,90+Math.random()*40,
+      {fill:lerpColor(emo.start,emo.end,0.55),opacity:'0.3',filter:'url(#fblur1)'},svg);
+    blobs.push(b);
+  }
+  path('M120,40 Q260,28 430,52',{stroke:'#7a5a3a','stroke-width':'8',fill:'none','stroke-linecap':'round'},svg);
+  const leafG=el('g',{transform:'translate(280,46) rotate(8) scale(2.2)'},svg);
+  drawLeafShape(leafG,{leaf:emo.leafTint,leaf2:emo.leafTint,leafShape:'oval'},0);
+  const chr=el('g',{id:'fchr',transform:'translate(280,60)'},svg);
+  line(0,0,0,48,{stroke:'rgba(255,255,255,.55)','stroke-width':'2'},chr);
+  const body=el('g',{id:'fchr-body',transform:'translate(0,65)'},chr);
+  const fillCol=lerpColor(emo.start,emo.end,0.15);
+  const gradId='fchrysGrad-'+Math.random().toString(36).substr(2,9);
+  const grad=el('radialGradient',{id:gradId,cx:'35%',cy:'30%',r:'65%'},defs);
+  el('stop',{offset:'0%','stop-color':'#ffffff','stop-opacity':'0.35'},grad);
+  el('stop',{offset:'40%','stop-color':fillCol,'stop-opacity':'1'},grad);
+  el('stop',{offset:'85%','stop-color':'#1a1105','stop-opacity':'0.4'},grad);
+  el('stop',{offset:'100%','stop-color':'#000000','stop-opacity':'0.75'},grad);
+  const leftHalf=path('M0,-20 C-62,4 -56,164 0,236 C-2,164 -2,4 0,-20 Z',{fill:'url(#'+gradId+')',stroke:emo.spotTint,'stroke-width':'2.5','stroke-opacity':'0.3'},body);
+  const rightHalf=path('M0,-20 C62,4 56,164 0,236 C2,164 2,4 0,-20 Z',{fill:'url(#'+gradId+')',stroke:emo.spotTint,'stroke-width':'2.5','stroke-opacity':'0.3'},body);
+  path('M-22,56 Q0,76 22,56 M-24,104 Q0,128 24,104 M-20,152 Q0,174 20,152',{stroke:emo.spotTint,'stroke-width':'2.2',fill:'none',opacity:'0.45','stroke-linecap':'round'},body);
+  ellp(-16,24,15,30,{fill:'#ffffff',opacity:'0.22'},body);
+  const seam=path('M0,-20 L8,40 L-6,86 L10,132 L0,176 L6,210 L0,236',{stroke:'#fff7da','stroke-width':'3',fill:'none',opacity:'0.9','stroke-linecap':'round','stroke-linejoin':'round'},body);
+  document.getElementById('cel-title').textContent='';document.getElementById('cel-msg').textContent='';
+  show('celebrate');
+  speak('Listen... the chrysalis is ready.',0.84);
+  let w=0;const wig=setInterval(()=>{w++;chr.setAttribute('transform','translate(280,60) rotate('+(Math.sin(w*1.1)*3).toFixed(2)+',0,30)');if(w>16)clearInterval(wig);},90);
+  setTimeout(()=>{
+    SOUND.chime('hold');
+    [leftHalf,rightHalf].forEach(h=>{h.style.transition='transform 1.1s cubic-bezier(.3,.8,.4,1), opacity 1.1s ease';h.style.transformBox='fill-box';h.style.transformOrigin='top center';});
+    leftHalf.style.transform='translate(-88px,21px) rotate(-26deg)';leftHalf.style.opacity='0';
+    rightHalf.style.transform='translate(88px,21px) rotate(26deg)';rightHalf.style.opacity='0';
+    seam.style.transition='opacity .6s ease';seam.style.opacity='0';
+    celEl.style.background='linear-gradient(180deg,'+lerpColor(emo.start,emo.end,0.55)+' 0%,'+lerpColor(emo.start,emo.end,0.85)+' 55%,'+lerpColor(emo.start,emo.end,0.95)+' 100%)';
+    blobs.forEach(b=>{b.style.transition='fill 2.2s ease';b.setAttribute('fill',lerpColor(emo.start,emo.end,0.92));});
+  },1900);
+  setTimeout(()=>{
+    chr.remove();
+    var bf=el('g',{id:'bfly',transform:'translate(280,82)',opacity:'0'},svg);
+    var flut=el('g',{id:'bfly-flutter'},bf);
+    drawButterfly(flut,sp,1,'meta');
+    bf.setAttribute('opacity','1');
+    var t0=performance.now();
+    (function gr(now){var p=Math.min((now-t0)/1200,1),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+      flut.setAttribute('transform','scale('+(0.15+0.85*e).toFixed(3)+')');
+      if(p<1)requestAnimationFrame(gr);else flapWings();})( performance.now());
+    SOUND.chime('smell');burstSparkles();
+    setTimeout(()=>floatAndFinish(bf,sp),1600);
+  },3100);
+}
+// ---- wing flutter animation ----
+function animateFlap(root,opts){
+  opts=opts||{};
+  var speed=opts.speed||6,amp=opts.amp||0.4,bobAmt=opts.bob||3;
+  var wL=root.querySelector('.wingL'),wR=root.querySelector('.wingR');
+  var baseL=wL?(wL.getAttribute('transform')||''):'';
+  var baseR=wR?(wR.getAttribute('transform')||''):'';
+  var baseRoot=root.getAttribute('transform')||'';
+  var t0=performance.now(),raf=null;
+  function frame(now){
+    var t=(now-t0)/1000;
+    var sX=(1-amp)+amp*Math.abs(Math.cos(t*speed));
+    var rot=Math.sin(t*speed)*8*amp;
+    if(wL)wL.setAttribute('transform',(baseL?baseL+' ':'')+'scale('+sX.toFixed(3)+',1) rotate('+rot.toFixed(2)+')');
+    if(wR)wR.setAttribute('transform',(baseR?baseR+' ':'')+'scale('+sX.toFixed(3)+',1) rotate('+rot.toFixed(2)+')');
+    var by=Math.sin(t*speed*0.5)*bobAmt;
+    root.setAttribute('transform',(baseRoot?baseRoot+' ':'')+'translate(0,'+by.toFixed(2)+')');
+    raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+  return function stop(){
+    if(raf)cancelAnimationFrame(raf);
+    if(wL)wL.setAttribute('transform',baseL);
+    if(wR)wR.setAttribute('transform',baseR);
+    root.setAttribute('transform',baseRoot);
+  };
+}
+let flapStop=null;
+function flapWings(){
+  var flut=document.getElementById('bfly-flutter');
+  if(!flut)return;
+  if(flapStop)flapStop();
+  flapStop=animateFlap(flut,{speed:8.5,amp:0.45,bob:4});
+}
+function floatAndFinish(bf,sp){
+  const t0=performance.now(),sx=280,sy=150,ex=280,ey=30;
+  function fl(now){let p=Math.min((now-t0)/3200,1);const e=1-Math.pow(1-p,2);bf.setAttribute('transform','translate('+(sx+(ex-sx)*e).toFixed(1)+','+(sy+(ey-sy)*e).toFixed(1)+')');if(p<1)requestAnimationFrame(fl);}requestAnimationFrame(fl);
+  document.getElementById('cel-title').textContent='You did it!';
+  const msg=document.getElementById('cel-msg');
+  const emoName=LG.emotion?LG.emotion.name.toLowerCase():'feeling';
+  msg.innerHTML='You breathed and listened your way from egg to butterfly, turning your '+emoName+' into stillness. Your '+sp.egg.replace(' Egg','')+' egg became a <span class="cel-species">'+sp.butterfly+'</span>.';
+  document.getElementById('cel-title').classList.add('fade-in');msg.classList.add('fade-in');
+  speak('You did it! You completed your breathing journey.',0.88);
+}
+function burstSparkles(){burstSparklesEl(document.getElementById('cel-spark'),20);}
+function clearSpark(){const h=document.getElementById('cel-spark');if(h)h.innerHTML='';if(flapStop){flapStop();flapStop=null;}}
+
+
+function burstSparklesEl(host,n){if(!host)return;host.innerHTML='';for(var i=0;i<n;i++){var sx=document.createElement('div');sx.className='spk';sx.textContent=String.fromCodePoint([0x2728,0x2B50,0x1F31F][i%3]);sx.style.left=(12+Math.random()*74)+'%';sx.style.top=(8+Math.random()*74)+'%';sx.style.fontSize=(0.6+Math.random()*1.0)+'rem';sx.style.setProperty('--t',(1.2+Math.random()*1.6).toFixed(2)+'s');sx.style.setProperty('--dl',(-Math.random()*2).toFixed(2)+'s');host.appendChild(sx);}}
+
+// ===================== EGG HATCHING =====================
+function showHatch(){
+  var sp=SPECIES[G.egg];
+  var svg=document.getElementById('hatch-svg');svg.innerHTML='';
+  var defs=el('defs',{},svg);
+  el('filter',{id:'blur2',x:'-40%',y:'-40%',width:'180%',height:'180%'},defs).appendChild(el('feGaussianBlur',{stdDeviation:'2'}));
+  el('filter',{id:'hb',x:'-50%',y:'-50%',width:'200%',height:'200%'},defs).appendChild(el('feGaussianBlur',{stdDeviation:'7'}));
+  circ(280,150,140,{fill:'#fff6e6',opacity:0.7,filter:'url(#hb)'},svg);
+  // caterpillar hidden inside (inserted before the egg shell so it renders underneath)
+  var cat=el('g',{id:'h-cat',transform:'translate(280,196) scale(0.2)'},svg);drawCatBody(cat,sp,'hatch');
+  // egg: bottom cup + top cap + crack
+  var eggG=el('g',{id:'h-egg',transform:'translate(280,168)'},svg);
+  var bottom=el('g',{id:'h-bottom'},eggG);
+  path('M-38,-4 C-40,30 -20,58 0,58 C20,58 40,30 38,-4 Z',{fill:sp.eggShell,stroke:sp.eggSpot,'stroke-width':1.5},bottom);
+  for(var q=0;q<7;q++){var ang=Math.random()*6.28,rr=Math.random()*22;circ(Math.cos(ang)*rr*0.7,18+Math.sin(ang)*rr*0.7,1.6+Math.random()*1.4,{fill:sp.eggSpot,opacity:0.5},bottom);}
+  var top=el('g',{id:'h-top'},eggG);
+  path('M-38,-4 C-40,-42 -18,-60 0,-60 C18,-60 40,-42 38,-4 Z',{fill:sp.eggShell,stroke:sp.eggSpot,'stroke-width':1.5},top);
+  ellp(-13,-30,9,14,{fill:'#ffffff',opacity:0.4},top);
+  for(var q2=0;q2<7;q2++){var ang2=Math.random()*6.28,rr2=Math.random()*22;circ(Math.cos(ang2)*rr2*0.7,-22+Math.sin(ang2)*rr2*0.6,1.6+Math.random()*1.4,{fill:sp.eggSpot,opacity:0.5},top);}
+  path('M-38,-4 L-22,-11 L-8,-1 L6,-12 L20,-3 L38,-9',{stroke:'#6b4f38',fill:'none','stroke-width':2.2,'stroke-linecap':'round','stroke-linejoin':'round',opacity:0,id:'h-crack'},eggG);
+  document.getElementById('hatch-msg').textContent='';
+  document.getElementById('hatch-btn').style.display='none';
+  document.getElementById('hatch-spark').innerHTML='';
+  show('hatch');
+  SOUND.ensure();SOUND.resume();
+  speak('Your '+sp.egg.replace(' Egg','')+' egg is hatching.',0.86);
+  animateHatch(sp);
+}
+function animateHatch(sp){
+  var eggG=document.getElementById('h-egg'),top=document.getElementById('h-top'),crack=document.getElementById('h-crack'),cat=document.getElementById('h-cat');
+  var w=0;var wob=setInterval(function(){w++;eggG.setAttribute('transform','translate(280,168) rotate('+(Math.sin(w*0.7)*6).toFixed(2)+',0,40)');if(w>16){clearInterval(wob);eggG.setAttribute('transform','translate(280,168)');}},80);
+  setTimeout(function(){if(crack)crack.setAttribute('opacity','1');SOUND.chime('in');},1500);
+  setTimeout(function(){
+    if(top){top.style.transition='transform 0.9s ease, opacity 0.9s ease';top.style.transformBox='fill-box';top.style.transformOrigin='center';top.style.transform='translate(-46px,-34px) rotate(-34deg)';top.style.opacity='0';}
+    cat.parentNode.appendChild(cat);
+    SOUND.chime('smell');SOUND.munch();
+    burstSparklesEl(document.getElementById('hatch-spark'),12);
+    var t0=performance.now();
+    function gr(now){var p=Math.min((now-t0)/1050,1);var e=p<0.5?2*p*p:1-Math.pow(-2*p+2,2)/2;cat.setAttribute('transform','translate(280,'+(196-22*e).toFixed(1)+') scale('+(0.2+2.3*e).toFixed(3)+')');if(p<1)requestAnimationFrame(gr);}
+    requestAnimationFrame(gr);
+  },2100);
+  setTimeout(function(){
+    document.getElementById('hatch-msg').textContent='Say hello to your '+sp.butterfly+' caterpillar!';
+    document.getElementById('hatch-btn').style.display='inline-block';
+    speak('Say hello to your caterpillar. Let us help it grow with gentle breathing.',0.86);
+  },3300);
+}
+function hatchToLevel(){runLevel(0);}
+
+// ===================== INIT =====================
+function buildStartArt(){
+  var svg=document.getElementById('start-art');
+  svg.innerHTML='';
+  el('defs',{},svg);
+  var pos=el('g',{transform:'translate(80,62) scale(0.42)'},svg);
+  var flut=el('g',{id:'start-bf-flutter'},pos);
+  drawButterfly(flut,SPECIES[0],1,'bf');
+  animateFlap(flut,{speed:5.5,amp:0.3,bob:3});
+}
+window.addEventListener('DOMContentLoaded',()=>{setSoundIcon();buildStartArt();buildEggCards();spawnPetals(document.getElementById('start'),'rgba(255,255,255,0.7)');});
+</script>
+</body>
+</html>
